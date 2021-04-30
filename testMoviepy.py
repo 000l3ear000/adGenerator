@@ -1,12 +1,16 @@
 from sys import argv
-from os import path
+from os import path, remove
+from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
+from moviepy.video.fx.all import fadein, fadeout
 # from moviepy.video import *
 
 HEIGHT = 920
 FONTSIZE = 70
 OUTPUT_FILE_NAME = "ad.mp4"
+RESIZED_VIDEO = "resized.mp4"
+LOGO = "logo.png"
 
 epicDict = {
     "Template_6": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
@@ -14,7 +18,7 @@ epicDict = {
     "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [82, 254, 238], 920]
 }
 
-if argv.__len__() == 5:
+if argv.__len__() == 6:
     # font size
     # font color
     # font effect
@@ -25,7 +29,11 @@ if argv.__len__() == 5:
     textArray = argv[2].split(',')
     videoInput = argv[3]
     audioClip = argv[4]
-    print( templateName, textArray, videoInput, audioClip )
+    fontProperties = argv[5].split(',')
+    fontSize = int(fontProperties[0])
+    fontColor = fontProperties[1]
+    fontEffect = fontProperties[2]
+    print(templateName, textArray, videoInput, audioClip)
 
 
 def calculate_height(fontSize):
@@ -52,7 +60,7 @@ def returnHeight(templateName):
     return temp[3]
 
 
-def checkInputFile( fileName ):
+def checkInputFile(fileName):
     ext = path.splitext(fileName)
     if ext[1] == ".mp4":
         return True
@@ -60,35 +68,51 @@ def checkInputFile( fileName ):
         return False
 
 
-def resizeUserVideo( userVid ):
-    if checkInputFile( userVid ):
-        resizedVideo = VideoFileClip( userVid, audio=False).resize(( 1080, 1080 ))
-        return resizedVideo
+def resizeUserVideo(userVid):
+    if checkInputFile(userVid):
+        # resizedVideo = VideoFileClip( userVid, audio=False).resize(( 1080, 1080 ))
+        if path.exists(RESIZED_VIDEO):
+            remove(RESIZED_VIDEO)
+
+        ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
+        return VideoFileClip(RESIZED_VIDEO, audio=False)
+        
+        # return resizedVideo
     else:
-        resizedVideo = ImageClip(userVid).resize(( 1080, 1080 ))
+        resizedVideo = ImageClip(userVid).resize((1080, 1080))
         return resizedVideo
 
 
-def returnMaskedClip( fileName ):
+def returnMaskedClip(fileName):
     template = VideoFileClip(fileName)
-    masked_clip = mask_color(template, returnMaskColor( fileName ), thr=100, s=5)
+    masked_clip = mask_color(template, returnMaskColor(
+        fileName), thr=100, s=5).set_opacity(.9)
     return masked_clip
 
+def checkEffect():
+    if fontEffect == "fadein":
+        return True
+    else:
+        return False
 
 def setText(fileName):
     clip_list = []
     timingArray = returnTextTiming(fileName)
 
     for text in range(timingArray.__len__()):
-        print(textArray[text][1 : -1])
-        
         # slicing the array to exlude double quotes
-        txt_clip = TextClip(textArray[text][1 : -1], fontsize=FONTSIZE,
-                            color='white').set_duration(timingArray[text])
+        txt_clip = TextClip(textArray[text], fontsize=fontSize,
+                            color=fontColor).set_duration(timingArray[text])
+        
+        if checkEffect():
+            txt_clip = fadein(txt_clip, 2, [255, 255, 255])
+        else:
+            txt_clip = fadeout(txt_clip, 2, [255, 255, 255])
         clip_list.append(txt_clip)
-    
+
     final_clip = concatenate_videoclips(clip_list)
     return final_clip
+
 
 def setAudio(fileName):
     audioclip = AudioFileClip(fileName)
@@ -96,21 +120,37 @@ def setAudio(fileName):
     return new_audioclip
 
 
-def composeVideo():
+def returnLogo(fileName):
+    logo = (ImageClip(fileName)
+            .set_duration(30)
+            .resize(height=50)  # if you need to resize..
+            # (optional) logo-border padding
+            .margin(right=50, top=50, opacity=0)
+            .set_pos(("right", "top"))
+            )
+    logo.resize((100, 100))
+    return logo
 
+
+def composeVideo():
+    # resizedVideo = resizeUserVideo( videoInput )
+    # resizedVideo.close()
+    # remove(RESIZED_VIDEO)
     result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
-    returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE)))])
+        returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+    # result.show(20, interactive=True)
+    # result.set_duration(10)
     result.audio = setAudio(audioClip)
-    result.write_videofile(OUTPUT_FILE_NAME, fps=30, threads=2)
+    result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8)
 
 
 composeVideo()
 # print(checkInputFile(videoInput))
 
-    # except UniodeEncodeError:
-    #     txt_clip = TextClip("Issue with text", fontsize=FONTSIZE,
-    #                         color='white').set_duration(5)
-    #     clip_list.append(txt_clip)
+# except UniodeEncodeError:
+#     txt_clip = TextClip("Issue with text", fontsize=FONTSIZE,
+#                         color='white').set_duration(5)
+#     clip_list.append(txt_clip)
 
 # video2 = VideoFileClip("newTemplate.webM", audio=False)
 # video1 = VideoFileClip(
@@ -173,7 +213,7 @@ composeVideo()
 # video.show(10, interactive=True)
 # result = CompositeVideoClip([video, final_clip.set_start(1).set_position(("center", calculate_height(FONTSIZE)))])
 # result = CompositeVideoClip([video2, masked_clip.set_opacity(.7), final_clip.set_start(
-    # 5).set_position(("center", calculate_height(FONTSIZE)))])
+# 5).set_position(("center", calculate_height(FONTSIZE)))])
 # result = CompositeVideoClip([video1])
 # result.set_duration = 10
 # audioclip = AudioFileClip("Templates/Export Music/Cute.mp3")

@@ -5,3 +5,5 @@
 *.mp3
 REST API
 Templates
+node_modules/
+package-lock.json
