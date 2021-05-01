@@ -1,38 +1,76 @@
 from sys import argv
 from os import path, remove
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
-from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, CompositeAudioClip, concatenate_videoclips, ImageClip
+from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
 # from moviepy.video import *
 
 HEIGHT = 920
 FONTSIZE = 70
+FONTCOLOR = "white"
+FONTEFFECT = "fadeout"
 OUTPUT_FILE_NAME = "ad.mp4"
 RESIZED_VIDEO = "resized.mp4"
 LOGO = "logo.png"
 
+# Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
 epicDict = {
-    "Template_6": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
-    "Template_15": [[3.8, 4.6, 6, 6.6, 6.6], 1, [82, 254, 238], 920],
-    "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [82, 254, 238], 920]
+    "Template_1.webM": [[4.8, 4.8, 6, 6, 3.5], 1, [81, 253, 234], 920],
+    "Template_2.webM": [[4.8, 4.8, 6, 6, 3.5], 1, [81, 253, 234], 920],
+
+    "Template_3.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
+    "Template_4.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
+
+    "Template_5.webM": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
+    "Template_6.webM": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
+
+    "Template_7.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
+    "Template_8.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
+
+    "Template_9.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
+    "Template_10.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
+
+    "Template_11.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
+    "Template_12.webM": [[4.5, 6, 6, 6], 3.8, [80, 252, 236], 930],
+
+    "Template_13.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
+    "Template_14.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
+
+    "Template_15.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+    "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+
+    "Template_17.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+    "Template_18.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+
+    "Template_19.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
+    "Template_20.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960]
 }
 
+textMovements = ['Template_7.webM', 'Template_8.webM',
+                 'Template_9.webM', 'Template_70.webM']
+textMovementsRight = [200, 0, 200, 0, 200]
+textMovementsLeft = [0, 200, 0, 200, 0]
+videoFormats = ['mp4', 'webM', 'mov', 'mpeg-4', 'flv', 'avi', 'mkv', 'wmv']
+imageFormats = ['jpeg', 'png', 'jpg', 'svg']
+
 if argv.__len__() == 6:
-    # font size
-    # font color
-    # font effect
+
     print("5 args found")
     print(argv)
     # splitTemplateName = argv[1].split('.')
     templateName = argv[1]
     textArray = argv[2].split(',')
     videoInput = argv[3]
+    print(videoInput)
     audioClip = argv[4]
     fontProperties = argv[5].split(',')
     fontSize = int(fontProperties[0])
     fontColor = fontProperties[1]
-    fontEffect = fontProperties[2]
+    fontEffect = "fadeout" if fontProperties.__len__(
+    ) == 3 else fontProperties[2]
+    fontStyle = fontProperties[3] if fontProperties.__len__(
+    ) == 4 else fontProperties[2]
     print(templateName, textArray, videoInput, audioClip)
 
 
@@ -61,26 +99,29 @@ def returnHeight(templateName):
 
 
 def checkInputFile(fileName):
-    ext = path.splitext(fileName)
-    if ext[1] == ".mp4":
-        return True
+    ext = fileName.split('.')
+    if ext[1] in videoFormats:
+        return 1
+    elif ext[1] in imageFormats:
+        return 2
     else:
-        return False
+        return 0
 
 
 def resizeUserVideo(userVid):
-    if checkInputFile(userVid):
+    if checkInputFile(userVid) == 1:
         # resizedVideo = VideoFileClip( userVid, audio=False).resize(( 1080, 1080 ))
         if path.exists(RESIZED_VIDEO):
             remove(RESIZED_VIDEO)
 
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
         return VideoFileClip(RESIZED_VIDEO, audio=False)
-        
+
         # return resizedVideo
+    elif checkInputFile(userVid) == 2:
+        return ImageClip(userVid).resize((1080, 1080)).set_duration(30)
     else:
-        resizedVideo = ImageClip(userVid).resize((1080, 1080))
-        return resizedVideo
+        return "unknown file uploaded"
 
 
 def returnMaskedClip(fileName):
@@ -89,11 +130,13 @@ def returnMaskedClip(fileName):
         fileName), thr=100, s=5).set_opacity(.9)
     return masked_clip
 
+
 def checkEffect():
     if fontEffect == "fadein":
         return True
     else:
         return False
+
 
 def setText(fileName):
     clip_list = []
@@ -101,13 +144,36 @@ def setText(fileName):
 
     for text in range(timingArray.__len__()):
         # slicing the array to exlude double quotes
-        txt_clip = TextClip(textArray[text], fontsize=fontSize,
+        txt_clip = TextClip(textArray[text], fontsize=fontSize, font=fontStyle,
                             color=fontColor).set_duration(timingArray[text])
-        
+
         if checkEffect():
-            txt_clip = fadein(txt_clip, 2, [255, 255, 255])
+            txt_clip = fadein(txt_clip, 2, [255, 255, 0])
         else:
-            txt_clip = fadeout(txt_clip, 2, [255, 255, 255])
+            txt_clip = fadeout(txt_clip, 2, [255, 255, 0])
+        clip_list.append(txt_clip)
+
+    final_clip = concatenate_videoclips(clip_list)
+    return final_clip
+
+
+def setTextRL(fileName):
+    clip_list = []
+    timingArray = returnTextTiming(fileName)
+
+    for text in range(timingArray.__len__()):
+
+        # marginValue = textMovementsRight[text]
+        # print(marginValue)
+        # slicing the array to exlude double quotes
+        txt_clip = (TextClip(textArray[text], fontsize=fontSize, font=fontStyle,
+                             color=fontColor).set_duration(timingArray[text])
+                    .margin(right=textMovementsRight[text], left=textMovementsLeft[text], opacity=0))
+
+        if checkEffect():
+            txt_clip = fadein(txt_clip, 2, [255, 255, 0])
+        else:
+            txt_clip = fadeout(txt_clip, 2, [255, 255, 0])
         clip_list.append(txt_clip)
 
     final_clip = concatenate_videoclips(clip_list)
@@ -136,10 +202,16 @@ def composeVideo():
     # resizedVideo = resizeUserVideo( videoInput )
     # resizedVideo.close()
     # remove(RESIZED_VIDEO)
-    result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
-        returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
-    # result.show(20, interactive=True)
+    if templateName in textMovements:
+        result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setTextRL(templateName).set_start(
+            returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+    else:
+        result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
+            returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+    # result.show(10, interactive=True)
     # result.set_duration(10)
+    # lst = TextClip.list('font')
+    # print(lst)
     result.audio = setAudio(audioClip)
     result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8)
 
@@ -147,6 +219,11 @@ def composeVideo():
 composeVideo()
 # print(checkInputFile(videoInput))
 
+# vid = VideoFileClip("Templates/Export templates/Template 3.mov")
+# vid = VideoFileClip("Template_3.webM")
+# res = CompositeVideoClip([vid])
+# res.show(10, interactive=True)
+# res.write_videofile("Template_3.webM", fps = 24)
 # except UniodeEncodeError:
 #     txt_clip = TextClip("Issue with text", fontsize=FONTSIZE,
 #                         color='white').set_duration(5)
