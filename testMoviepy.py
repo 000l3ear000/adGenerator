@@ -4,6 +4,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
+import pyrebase
 # from moviepy.video import *
 
 HEIGHT = 920
@@ -12,7 +13,26 @@ FONTCOLOR = "white"
 FONTEFFECT = "fadeout"
 OUTPUT_FILE_NAME = "ad.mp4"
 RESIZED_VIDEO = "resized.mp4"
+FRAME_FILENAME = "framePreview.png"
 LOGO = "logo.png"
+
+
+
+config = {
+    "apiKey": "AIzaSyDvYb9sgl85AgyTriAgHwLg_-uadcFXlWY",
+    "authDomain": "imagepreview-aef2b.firebaseapp.com",
+    "projectId": "imagepreview-aef2b",
+    "databaseURL": "https://imagepreview-aef2b.firebaseio.com",
+    "storageBucket": "imagepreview-aef2b.appspot.com",
+    "messagingSenderId": "46502678413",
+    "appId": "1:46502678413:web:650b751df6da56d46577c4",
+    "measurementId": "G-W7KEVXRSG2"
+}
+
+firebase = pyrebase.initialize_app(config)
+storage = firebase.storage()
+email = "testuser@gmail.com"
+password = "123456"
 
 # Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
 epicDict = {
@@ -22,8 +42,8 @@ epicDict = {
     "Template_3.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
     "Template_4.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
 
-    "Template_5.webM": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
-    "Template_6.webM": [[4.5, 6, 6, 6], 4, [71, 226, 211], 920],
+    "Template_5.webM": [[4.5, 6, 6, 4], 4.8, [71, 226, 211], 920],
+    "Template_6.webM": [[4.5, 6, 6, 4], 4.8, [71, 226, 211], 920],
 
     "Template_7.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
     "Template_8.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
@@ -37,11 +57,11 @@ epicDict = {
     "Template_13.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
     "Template_14.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
 
-    "Template_15.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
-    "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+    "Template_15.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
+    "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
 
-    "Template_17.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
-    "Template_18.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 920],
+    "Template_17.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
+    "Template_18.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
 
     "Template_19.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
     "Template_20.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960]
@@ -54,7 +74,7 @@ textMovementsLeft = [0, 200, 0, 200, 0]
 videoFormats = ['mp4', 'webM', 'mov', 'mpeg-4', 'flv', 'avi', 'mkv', 'wmv']
 imageFormats = ['jpeg', 'png', 'jpg', 'svg']
 
-if argv.__len__() == 6:
+if argv.__len__() > 6:
 
     print("5 args found")
     print(argv)
@@ -71,8 +91,27 @@ if argv.__len__() == 6:
     ) == 3 else fontProperties[2]
     fontStyle = fontProperties[3] if fontProperties.__len__(
     ) == 4 else fontProperties[2]
+    saveFrame = argv[6].split(',')
+    saveFrameFlag = saveFrame[0]
+    saveFrameTime = int(saveFrame[1])
     print(templateName, textArray, videoInput, audioClip)
 
+
+def saveFrame():
+    getResult = composeVideo()
+    getResult.save_frame( FRAME_FILENAME, t = saveFrameTime )
+
+def getImageUrl():
+    auth = firebase.auth()
+    # userCreated = auth.create_user_with_email_and_password(email, password)
+    user = auth.sign_in_with_email_and_password(email, password)
+    url = storage.child(FRAME_FILENAME).get_url(user['idToken'])
+    print(url)
+
+def uploadPreviewImage():
+    saveFrame()
+    storage.child(FRAME_FILENAME).put(FRAME_FILENAME)
+    getImageUrl()
 
 def calculate_height(fontSize):
     return returnHeight(templateName) - (fontSize / 2)
@@ -212,18 +251,21 @@ def composeVideo():
     # result.set_duration(10)
     # lst = TextClip.list('font')
     # print(lst)
-    result.audio = setAudio(audioClip)
-    result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8)
+    if saveFrameFlag == "true":
+        return result
+    # result.audio = setAudio(audioClip)
+    # result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8)
 
 
-composeVideo()
+# composeVideo()
+uploadPreviewImage()
 # print(checkInputFile(videoInput))
 
-# vid = VideoFileClip("Templates/Export templates/Template 3.mov")
+# vid = VideoFileClip("Templates/Export templates/Template 20.mov")
 # vid = VideoFileClip("Template_3.webM")
 # res = CompositeVideoClip([vid])
 # res.show(10, interactive=True)
-# res.write_videofile("Template_3.webM", fps = 24)
+# res.write_videofile("Template_20.webM", fps = 24)
 # except UniodeEncodeError:
 #     txt_clip = TextClip("Issue with text", fontsize=FONTSIZE,
 #                         color='white').set_duration(5)
