@@ -1,10 +1,14 @@
 from sys import argv
+import urllib.request #video
+import requests # to get image from the web
+import shutil # to save it locally
 from os import path, remove
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
 import pyrebase
+import uuid
 # from moviepy.video import *
 
 HEIGHT = 920
@@ -15,8 +19,10 @@ OUTPUT_FILE_NAME = "ad.mp4"
 RESIZED_VIDEO = "resized.mp4"
 FRAME_FILENAME = "framePreview.png"
 LOGO = "logo.png"
-
-
+UPLOAD_IMAGE_NAME = "temp.jpeg"
+UPLOAD_VIDEO_NAME = "temp.mp4"
+IMAGE_URL = "https://picsum.photos/536/354"
+VIDEO_URL = "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
 
 config = {
     "apiKey": "AIzaSyDvYb9sgl85AgyTriAgHwLg_-uadcFXlWY",
@@ -26,11 +32,14 @@ config = {
     "storageBucket": "imagepreview-aef2b.appspot.com",
     "messagingSenderId": "46502678413",
     "appId": "1:46502678413:web:650b751df6da56d46577c4",
-    "measurementId": "G-W7KEVXRSG2"
+    "measurementId": "G-W7KEVXRSG2",
+    "serviceAccount": './firebase-creds.json'
 }
 
 firebase = pyrebase.initialize_app(config)
 storage = firebase.storage()
+db = firebase.database()
+id = uuid.uuid4()
 email = "testuser@gmail.com"
 password = "123456"
 
@@ -76,13 +85,13 @@ imageFormats = ['jpeg', 'png', 'jpg', 'svg']
 
 if argv.__len__() > 6:
 
-    print("5 args found")
-    print(argv)
+    # print("5 args found")
+    # print(argv)
     # splitTemplateName = argv[1].split('.')
     templateName = argv[1]
     textArray = argv[2].split(',')
     videoInput = argv[3]
-    print(videoInput)
+    # print(videoInput)
     audioClip = argv[4]
     fontProperties = argv[5].split(',')
     fontSize = int(fontProperties[0])
@@ -94,24 +103,66 @@ if argv.__len__() > 6:
     saveFrame = argv[6].split(',')
     saveFrameFlag = saveFrame[0]
     saveFrameTime = int(saveFrame[1])
-    print(templateName, textArray, videoInput, audioClip)
+    # print(type(saveFrameTime))
+    # print(fontSize, fontColor, fontEffect, fontStyle)
+    # print(saveFrameTime, saveFrameFlag)
+    # print(templateName, textArray, videoInput, audioClip)
 
+def retrieveUploadedImage():
+
+    # urllib.request.urlretrieve(IMAGE_URL, UPLOAD_IMAGE_NAME)
+    # urllib.request.urlretrieve(VIDEO_URL, UPLOAD_VIDEO_NAME)
+    # user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36"
+    # headers={'User-Agent': user_agent} 
+
+    # request=urllib.request.Request(url,None,headers) #The assembled request
+    # response = urllib.request.urlopen(request)
+    # #print(response.text)
+    # data = response.read()
+    # f = open(name, 'wb')
+    # f.write(data)
+    # f.close()
+    # filename = IMAGE_URL.split("/")[-1]
+
+    # Open the url image, set stream to True, this will return the stream content.
+    r = requests.get(VIDEO_URL, stream = True)
+
+    # Check if the image was retrieved successfully
+    if r.status_code == 200:
+        # Set decode_content value to True, otherwise the downloaded image file's size will be zero.
+        r.raw.decode_content = True
+        
+        # Open a local file with wb ( write binary ) permission.
+        with open(UPLOAD_VIDEO_NAME,'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+            
+        print('Image sucessfully Downloaded: ',UPLOAD_VIDEO_NAME)
+
+    else:
+        print('Image Couldn\'t be retreived')
 
 def saveFrame():
     getResult = composeVideo()
     getResult.save_frame( FRAME_FILENAME, t = saveFrameTime )
 
+
 def getImageUrl():
     auth = firebase.auth()
     # userCreated = auth.create_user_with_email_and_password(email, password)
     user = auth.sign_in_with_email_and_password(email, password)
-    url = storage.child(FRAME_FILENAME).get_url(user['idToken'])
+    url = storage.child(str(id)).get_url(user['idToken'])
     print(url)
 
+
+def deletePreviewImage():
+    storage.child(FRAME_FILENAME).delete(FRAME_FILENAME)
+
+
 def uploadPreviewImage():
-    saveFrame()
-    storage.child(FRAME_FILENAME).put(FRAME_FILENAME)
+    saveFrame() 
+    storage.child(str(id)).put(FRAME_FILENAME)
     getImageUrl()
+
 
 def calculate_height(fontSize):
     return returnHeight(templateName) - (fontSize / 2)
@@ -247,18 +298,20 @@ def composeVideo():
     else:
         result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
             returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+        
     # result.show(10, interactive=True)
     # result.set_duration(10)
     # lst = TextClip.list('font')
     # print(lst)
-    if saveFrameFlag == "true":
+    if saveFrameFlag == 'true':
         return result
     # result.audio = setAudio(audioClip)
     # result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8)
 
 
 # composeVideo()
-uploadPreviewImage()
+# uploadPreviewImage()
+# retrieveUploadedImage()
 # print(checkInputFile(videoInput))
 
 # vid = VideoFileClip("Templates/Export templates/Template 20.mov")
