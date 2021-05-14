@@ -5,7 +5,7 @@
 *.mp3
 *.html
 *.js
-REST API
+REST API/node_modules
 Templates
 node_modules/
 package-lock.json

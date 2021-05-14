@@ -1,0 +1,78 @@
+* {
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.fileInput {
+  width: 500px;
+  height: 300px;
+  border-radius: 10px;
+  border: 1px solid black;
+}
+#template_container {
+  width: 90%;
+  display: flex;
+  height: 300px;
+  border: 1px solid grey;
+  border-radius: 10px;
+  justify-content: start;
+  align-items: center;
+  overflow: auto;
+}
+
+.template_single > img {
+  width: 200px;
+  border-radius: 2px;
+}
+.temp_head{
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.template_single {
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  width: 250px;
+  padding-left: 30px;
+  padding-right: 30px;
+  height: 220px;
+  justify-content: space-evenly;
+  border: 1px solid black;
+}
+.template_single > input {
+  margin-right: 5px;
+}
+
+#template_music {
+  width: 500px;
+  border: 1px solid black;
+  border-radius: 2px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+#textInputs {
+  display: flex;
+  flex-direction: column;
+  min-height: 0px;
+  max-height: 500px;
+  width: 500px;
+  align-items: center;
+  justify-content: space-evenly;
+}
+#textInputs > input {
+  height: 50px;
+  width: 90%;
+  padding: 10px;
+  font-size: 30px;
+}
