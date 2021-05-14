@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ad Generator</title>
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+	
+	
+	<input type="file" id="fileInput" name="input_file">
+
+	<h1 class="temp_head">Select A Template</h1>
+
+	<div id="template_container">
+	</div>
+
+	<h1 class="temp_head">Select A Music</h1>
+	<div id="template_music">
+		<select name="plan" id="plan">
+			<option value="None" selected>None</option>
+			<option value="Cute.mp3">Music 1</option>
+			<option value="Motive.mp3" >Music 2</option>
+			<option value="One More look.mp3">Music 3</option>
+			<option value="Strolling.mp3">Music 4</option>
+			<option value="That was close.mp3">Music 5</option>
+			<option value="The Only Way is Through.mp3">Music 6</option>
+			<option value="This is Living.mp3">Music 7</option>
+			<option value="Wildflowers.mp3">Music 8</option>
+		</select>
+	
+
+		<audio controls autoplay id="templateMusic"></audio>
+	</div>
+	<form id="textInputs">
+	</form>
+
+	<div id="err_msg" style="color: red;">
+
+	</div>
+
+	<div>
+		<select name="fontSizeOptions" id="fontSizes">
+			<option value="50" selected>50</option>
+			<option value="60" >60</option>
+			<option value="70" >70</option>
+			<option value="80" >80</option>
+		</select>
+	</div>
+	<div>
+		<select name="fontStyleOptions" id="fontStyles">
+			<option value="Arial" selected>Arial</option>
+			<option value="Arial-Bold" >Arial Bold</option>
+			<option value="Calibri" >Calibri</option>
+			<option value="Calibri-Bold" >Calibri Bold</option>
+			<option value="Courier-New" >Courier New</option>
+			<option value="Courier-New-Bold" >Courier New Bold</option>
+		</select>
+	</div>
+
+	<div>
+		<select name="fontColorOptions" id="fontColor">
+			<option value="white" selected>White</option>
+			<option value="red" >Red</option>
+			<option value="blue" >Blue</option>
+			<option value="green" >Green</option>
+			<option value="yellow" >Yellow</option>
+			<option value="black" >Black</option>
+		</select>
+	</div>
+
+
+	<div>
+		<select name="fontFadeEffectOptions" id="fontFadeEffect">
+			<option value="fadeout" selected>Fade Out</option>
+			<option value="fadein">Fade In</option>
+		</select>
+	</div>
+
+	<Button type="Button" id="btn_next" onclick=finalInputs()>NEXT</Button>
+
+
+
+
+	<script src="valid.js"></script>
+</body>
+</html>
+
+

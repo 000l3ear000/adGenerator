@@ -3,8 +3,7 @@
 *.mov
 *.png
 *.mp3
-*.html
-*.js
+
 REST API/node_modules
 Templates
 node_modules/
