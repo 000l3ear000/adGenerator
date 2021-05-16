@@ -13,16 +13,16 @@ const size_type = (e) => {
 
     }
     else {
-        if( (file.size / 1024) / 1024 > 10 ){
+        if( (file.size / 1024) / 1024 > 20 ){
             // addPara( "file is too large, Max file size is 10 MB" );
             var err_msg_div = document.getElementById("err_msg");
-            err_msg_div.innerHTML = "file is too large, Max file size is 10 MB";
+            err_msg_div.innerHTML = "file is too large, Max file size is 20 MB";
             setTimeout( () => {
                 err_msg_div.innerHTML = '';
             }, 3000);
         }
         else{
-            addPara(":)")
+            // addPara(":)")
             INPUT_FILE = file;
             inputs.input_file = file;
             console.log(inputs);
@@ -117,7 +117,11 @@ const createTemplatesDiv = () => {
     var templatesDiv = document.getElementById("template_container");
     
     for ( var i = 0; i < 20; i++ ){
-        
+        var textDiv = document.createElement("div");
+        var imgInputDiv = document.createElement("div");
+        var text = document.createElement("h3");
+        text.textContent="Template "+ (i + 1);
+        textDiv.appendChild(text);
         var tempDiv = document.createElement("div");
         var tempInput = document.createElement("input");
         tempInput.type = "radio";
@@ -125,23 +129,28 @@ const createTemplatesDiv = () => {
         const ppd = "template" + (i + 1);
         tempInput.value = ppd;
         var tempImage = document.createElement("img");
-        tempImage.src = "http://localhost:3000/static/temp.jpeg"
+        tempImage.src = "http://localhost:3000/static/template" + ( i + 1 ) + ".png";
         tempImage.onclick = checkTrue;
 
         tempDiv.classList.add("template_single");
         tempDiv.id = "template_div_single"
-        tempDiv.appendChild( tempInput );
-        tempDiv.appendChild( tempImage );
+        imgInputDiv.appendChild( tempInput );
+        imgInputDiv.appendChild( tempImage );
+        imgInputDiv.classList.add("imgInput")
+
+        tempDiv.appendChild( imgInputDiv );
+        tempDiv.appendChild(textDiv);
         
         templatesDiv.appendChild(tempDiv);
+       
         
     }
 
 
 }
 document.getElementById("plan").addEventListener("change",()=>{
-    document.getElementById("templateMusic").src="http://localhost:3000/static/" + document.getElementById("plan").value;
     inputs.template_music = document.getElementById("plan").value;
+    document.getElementById("templateMusic").src="http://localhost:3000/static/" + document.getElementById("plan").value;
     console.log(">>>", inputs.template_music)
 })
 
@@ -156,6 +165,8 @@ window.onload = createTemplatesDiv;
 
 // document.getElementById("btn_next").addEventListener("click", console.log(inputs))
 const finalInputs = () => {
+
+    inputs.template_music = document.getElementById("plan").value;
     if(inputs.input_file && inputs.template_name && inputs.template_music){
         console.log("i am here");
         console.log(txtLength);
@@ -169,23 +180,31 @@ const finalInputs = () => {
         
 
         if(result){
-
+            const btn=document.querySelector('#btn_next');
+            btn.disabled=true;
+            btn.textContent = "Generating..."
+            
+            
             console.log(inputs);
             console.log("navigate now!!")
             const fileObj = inputs.input_file;
             var data = new FormData()
             data.append('input_file', fileObj);
             data.append('inputs', JSON.stringify(inputs));
+            console.log(data);
             
             fetch( "http://localhost:3000/upload", {
                 method: 'POST',
                 body: data
             })
             .then( res => res.json() )
-            .then( data => {
-                if( data.status == "success" ) console.log(data.fileName);
+            .then( res => {
+                if( res.status == "success" ){
+                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}`
+                };
             })
-
+            btn.style.backgroundColor = "rgb(26, 24, 24)";
+            btn.style.color = "#29f2e4"
             // .then( res => res.json()
             // .then( data => {
             //     if ( data.status == "success" ){

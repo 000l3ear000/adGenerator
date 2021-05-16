@@ -1,0 +1,74 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body{
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+        .player{
+            width: 80%;
+            height: 500px;
+        }
+        #preview{
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="player">
+        <video id="preview" autoplay loop preload="auto" controls controlsList="nodownload">
+            <source id="preview-src" type="video/mp4">
+        </video>
+    </div>
+
+
+
+    <script>
+        
+        const arr=[];
+        const data=location.search;
+        const urlParams = new URLSearchParams(data);
+        for (const [key, value] of urlParams) {
+            console.log(`${key}:${value}`);
+            const obj = {}
+            obj[key] = JSON.parse(value);
+            arr.push(obj)
+        }
+
+        console.log(arr);
+        document.getElementById("preview-src").src = "http://localhost:3000/static/"+arr[0].src;
+
+        // function sleep(ms) {
+        //     return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+        // var clickEvent = new MouseEvent("click", {
+        //     "view": window,
+        //     "bubbles": true,
+        //     "cancelable": false
+        // });
+
+        // async function unmuteVideo() {
+
+        //     await sleep(1000);
+        //     var vid = document.getElementById("preview");
+        //     vid.attributes.removeNamedItem("muted");
+        //     console.log(vid.attributes);
+        //     vid.muted = false;
+        //     vid.dispatchEvent(clickEvent);
+        // }
+        // document.onload = unmuteVideo();
+        
+    </script>
+
+</body>
+</html>

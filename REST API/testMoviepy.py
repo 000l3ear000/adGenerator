@@ -4,6 +4,8 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
+from math import ceil
+import shutil
 
 HEIGHT = 920
 FONTSIZE = 70
@@ -102,7 +104,16 @@ def checkInputFile(fileName):
         return 2
     else:
         return 0
-
+ 
+def modifyDuration( vid ):
+    duration = VideoFileClip( vid, audio=False ).duration
+    if duration < 30:
+        if previewFlag:
+            return ceil( 10 / duration )
+        else:
+            return ceil( 30 / duration )
+    else:
+        return 0
 
 def resizeUserVideo(userVid):
     if checkInputFile(userVid) == 1:
@@ -111,7 +122,17 @@ def resizeUserVideo(userVid):
             remove(RESIZED_VIDEO)
 
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
-        if previewFlag:
+        duration = modifyDuration( userVid )
+        clips = []
+        if duration:
+            for i in range(duration):
+                clip = VideoFileClip( RESIZED_VIDEO, audio=False )
+                clips.append(clip)
+            final_clip = concatenate_videoclips( clips )
+        
+        if previewFlag and duration:
+            return final_clip
+        elif previewFlag and not(duration):
             return VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
         else:
             return VideoFileClip(RESIZED_VIDEO, audio=False)
@@ -168,7 +189,7 @@ def setTextRL(fileName):
 
     for text in range(timingArray.__len__()):
 
-        txt_clip = (TextClip(textArray[text], fontsize=fontSize, font=fontStyle,
+        txt_clip = (TextClip(textArray[text][ 1 : -1], fontsize=fontSize, font=fontStyle,
                              color=fontColor).set_duration(timingArray[text])
                     .margin(right=textMovementsRight[text], left=textMovementsLeft[text], opacity=0))
 
@@ -203,8 +224,6 @@ def previewVideo(fileName):
     logo = (ImageClip(fileName)
             .set_duration(10)
             .resize(height=540)  # if you need to resize..
-            # (optional) logo-border padding
-            # .margin(right=50, top=50, opacity=0)
             .set_pos(("center"))
             )
     logo.resize((540, 540))
@@ -231,11 +250,11 @@ def composeVideo():
     
     result.audio = setAudio(audioClip)
     if previewFlag:
-        result.set_duration(5).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
+        result.set_duration(10).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
     else:
         result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
 
-    # if path.exists( OUTPUT_FILE_NAME + "TEMP_MPY_wvf_snd.mp3" ):
-    #     remove( OUTPUT_FILE_NAME + "TEMP_MPY_wvf_snd.mp3" )
+    if path.exists( OUTPUT_FILE_NAME ):
+        shutil.move( "./" + OUTPUT_FILE_NAME, "./demoVideos" )
 
 composeVideo()

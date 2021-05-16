@@ -1,8 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const {spawn} = require('child_process');
+const fs = require('fs');
 const app = express();
-const {PythonShell} = require('python-shell');
 const port = 3000;
 
 const path = require('path');
@@ -11,7 +11,8 @@ app.use(express.json());
 
 app.use('/static', express.static('templateImages'))
 app.use('/static', express.static('templateMusic'))
-
+app.use('/static',express.static('demoVideos'))
+app.use('/static',express.static('templateImages'))
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
     res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, access-control-allow-origin,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
@@ -92,6 +93,10 @@ app.get('/getimage',(req,res)=>{
 app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname, "index.html"));
 })
+app.get('/preview',(req,res)=>{
+    res.sendFile(path.join(__dirname, `navigate.html`));    
+})
+
 
 
 app.post('/upload', upload.single('input_file') ,(req, res) => {
@@ -135,7 +140,19 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
                 status : "success",
                 fileName : outputFileName
                 } );
-        }
+
+        fs.unlink(uploadedFile, (err) => {
+            if (err) {
+                console.error(err)
+                return
+            }
+            else{
+                console.log(uploadedFile ,"Successfully removed")
+            }
+        })}
+            
+            
+        
         else{
             res.json({
                 status : "error"
