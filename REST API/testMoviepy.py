@@ -228,11 +228,9 @@ def previewVideo(fileName):
             )
     logo.resize((540, 540))
     return logo
-    
 
+def assembleInputBasedVideo():
 
-def composeVideo():
-    
     if templateName in textMovements:
         if previewFlag:
             result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setTextRL(templateName).set_start(
@@ -248,13 +246,20 @@ def composeVideo():
             result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
     
+    return result
+
+
+def composeVideo():
+    result = assembleInputBasedVideo()
     result.audio = setAudio(audioClip)
+
     if previewFlag:
         result.set_duration(10).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
     else:
-        result.write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
+        result.set_duration(30).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
 
     if path.exists( OUTPUT_FILE_NAME ):
         shutil.move( "./" + OUTPUT_FILE_NAME, "./demoVideos" )
+
 
 composeVideo()

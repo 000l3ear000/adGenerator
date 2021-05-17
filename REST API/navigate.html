@@ -26,12 +26,13 @@
 
 
     <div class="player">
-        <video id="preview" autoplay loop preload="auto" controls controlsList="nodownload">
+        <video id="preview" autoplay loop name="media" controls controlsList="nodownload">
             <source id="preview-src" type="video/mp4">
         </video>
     </div>
-
-
+    
+    <button onclick=upload() value="Buy" type="button">download</button>
+    <a download id = "outputVid"></a>
 
     <script>
         
@@ -41,13 +42,43 @@
         for (const [key, value] of urlParams) {
             console.log(`${key}:${value}`);
             const obj = {}
-            obj[key] = JSON.parse(value);
+            obj[key] = value;
             arr.push(obj)
         }
+        var temp = JSON.parse(arr[1].data);
+        var file = arr[2].inputFile;
+        console.log("ISKO DEKHO >>>", temp);
+        console.log("this is data sent >>>", file);
 
-        console.log(arr);
         document.getElementById("preview-src").src = "http://localhost:3000/static/"+arr[0].src;
 
+        const upload=()=>{
+            var data = new FormData()
+            data.append('input_file', file);
+            data.append('inputs', JSON.stringify(temp));
+            console.log(data);
+            fetch( "http://localhost:3000/upload", {
+                method: 'POST',
+                headers:{
+                    flag : "true"
+                },
+                body: data
+            })
+            .then( res => res.json() )
+            .then( res => {
+                if( res.status == "success" ){
+                    //window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${fileObj}`
+                    var element = document.getElementById("outputVid");
+                    element.setAttribute('href', "http://localhost:3000/static/"+res.fileName);
+                    // element.setAttribute('href', "http://localhost:3000/static/"+res.fileName);
+                    // element.download = true;
+                    element.style.display = 'none';
+                    // document.body.appendChild(element);
+                    element.click();
+                };
+            })
+        }
+         
         // function sleep(ms) {
         //     return new Promise(resolve => setTimeout(resolve, ms));
         // }

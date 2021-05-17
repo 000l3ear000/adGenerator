@@ -13,15 +13,19 @@ app.use('/static', express.static('templateImages'))
 app.use('/static', express.static('templateMusic'))
 app.use('/static',express.static('demoVideos'))
 app.use('/static',express.static('templateImages'))
+// app.use('/static',express.static('css'))
+// app.use('/static',express.static('js'))
+
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-    res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, access-control-allow-origin,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+    res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, flag, access-control-allow-origin,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
     res.header("Access-Control-Allow-Origin", "*");
     next();
 });
 
 
 const checkTemplateName = ( template_name ) => {
+    console.log("THISSS",template_name)
     switch ( template_name ){
         case "template1":
             return "Template_1.webM";
@@ -42,7 +46,7 @@ const checkTemplateName = ( template_name ) => {
         case "template9":
             return "Template_9.webM";
         case "template10":
-            return "Template_10.webM";
+            return "Template_10.weebM";
         case "template11":
             return "Template_11.webM";
         case "template12":
@@ -86,12 +90,12 @@ const modifyTextInput=(arr)=>{
 
 const upload = multer({  storage: store  });
 
-app.get('/getimage',(req,res)=>{
-    res.sendFile(path.join(__dirname, "/uploads/1620348016104--sample-mp4-file.mp4"));
-})
+// app.get('/getimage',(req,res)=>{
+//     res.sendFile(path.join(__dirname, "/uploads/1620348016104--sample-mp4-file.mp4"));
+// })
 
 app.get('/',(req,res)=>{
-    res.sendFile(path.join(__dirname, "index.html"));
+    res.sendFile(path.join(__dirname, "./index.html"));
 })
 app.get('/preview',(req,res)=>{
     res.sendFile(path.join(__dirname, `navigate.html`));    
@@ -101,12 +105,18 @@ app.get('/preview',(req,res)=>{
 
 app.post('/upload', upload.single('input_file') ,(req, res) => {
     req.setTimeout(0);
+    flag = false;
+    if ( req.headers?.flag == "true" ){
+        console.log("i was near a flag");
+        flag = true;
+    }
     console.log("done");
     // running python script
     console.log(newFilename);
-    // sleep(5000);
     const data = req.body;
+    console.log("raw----->>>>>>",data["input_file"])
     const temp = JSON.parse( data["inputs"] );
+    console.log("Parsed-------->",temp);
     const uploadedFile = 'uploads/' + newFilename;
     const templateName = checkTemplateName( temp.template_name );
     const templateMusic = 'templateMusic/' + temp.template_music;
@@ -124,7 +134,16 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
     const outputFileName = Date.now()+"--ad"+'.mp4';
     var dataToSend;
     // // spawn new child process to call the python script
-    const python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName }`, 1]);
+    if ( flag ){
+
+        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName }`]);
+    }
+
+    else{
+
+        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName }`, 1]);
+    }
+
     // const python = spawn('python', ['--version'])
     // // collect data from script
     python.stdout.on('data', function (data) {
@@ -140,16 +159,17 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
                 status : "success",
                 fileName : outputFileName
                 } );
+            }
 
-        fs.unlink(uploadedFile, (err) => {
-            if (err) {
-                console.error(err)
-                return
-            }
-            else{
-                console.log(uploadedFile ,"Successfully removed")
-            }
-        })}
+        // fs.unlink(uploadedFile, (err) => {
+        //     if (err) {
+        //         console.error(err)
+        //         return
+        //     }
+        //     else{
+        //         console.log(uploadedFile ,"Successfully removed")
+        //     }
+        // })}
             
             
         
@@ -162,21 +182,6 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
         // res.json(dataToSend.slice(72, dataToSend.length - 72))
         // res.json(dataToSend)
     });
-
-    // let options = {
-    //     mode: 'text',
-    //     pythonOptions: ['-u'], // get print results in real-time
-    //        //If you are having python_test.py script in same folder, then it's optional.
-    //     args: ["Template_16.webM", `"Text 1","Text 2","Text 3",Text 4","Text 5"`, "video1.mp4", "Motive.mp3", `50,green,fadeout,Arial`] //An argument which can be accessed in the script using sys.argv[1]
-    // };
-
-    // PythonShell.run('testMoviepy.py', options, function (err, result){
-    //     if (err) throw err;
-    //     // result is an array consisting of messages collected 
-    //     //during execution of script.
-    //     console.log('result: ', result.toString());
-    //     res.send(result.toString())
-    // });
 })
 
 

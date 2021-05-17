@@ -192,6 +192,7 @@ const finalInputs = () => {
             data.append('input_file', fileObj);
             data.append('inputs', JSON.stringify(inputs));
             console.log(data);
+
             
             fetch( "http://localhost:3000/upload", {
                 method: 'POST',
@@ -200,7 +201,7 @@ const finalInputs = () => {
             .then( res => res.json() )
             .then( res => {
                 if( res.status == "success" ){
-                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}`
+                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${JSON.stringify(fileObj)}`
                 };
             })
             btn.style.backgroundColor = "rgb(26, 24, 24)";
@@ -213,7 +214,6 @@ const finalInputs = () => {
             //     }
             // })
             // )
-        }        
+        }        }
     }
            
-}
