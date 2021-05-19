@@ -21,6 +21,11 @@
             height: 100%;
         }
     </style>
+
+    <script src=
+        "https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js">
+    </script>
+
 </head>
 <body>
 
@@ -31,8 +36,8 @@
         </video>
     </div>
     
-    <button onclick=upload() value="Buy" type="button">download</button>
-    <a download id = "outputVid"></a>
+    <button id="btn_buy" onclick="upload()" value="Buy" type="button">download</button>
+    <!-- <a download id = "outputVid"></a> -->
 
     <script>
         
@@ -51,8 +56,44 @@
         console.log("this is data sent >>>", file);
 
         document.getElementById("preview-src").src = "http://localhost:3000/static/"+arr[0].src;
+        // function download(file, text) {
+              
+        //       //creating an invisible element
+        //       var element = document.createElement('a');
+        //       element.setAttribute('href', 
+        //       'data:text/plain;charset=utf-8,'
+        //       + encodeURIComponent(text));
+        //       element.setAttribute('download', file);
+              
+        //       // Above code is equivalent to
+        //       // <a href="path of file" download="file name">
+              
+        //       document.body.appendChild(element);
+  
+        //       //onClick property
+        //       element.click();
+              
+        //       document.body.removeChild(element);
+        // }
 
-        const upload=()=>{
+        function download( filename ){
+          axios({
+              url:'http://127.0.0.1:3000/static/' + filename,
+              method:'GET',
+              responseType: 'blob'
+        })
+        .then((response) => {
+             const url = window.URL
+             .createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'output.mp4');
+                    document.body.appendChild(link);
+                    link.click();
+        })
+        }
+
+        const upload = () => {
             var data = new FormData()
             data.append('input_file', file);
             data.append('inputs', JSON.stringify(temp));
@@ -67,6 +108,9 @@
             .then( res => res.json() )
             .then( res => {
                 if( res.status == "success" ){
+                    
+                    // download(res.fileName, "http://localhost:3000/static/" + res.fileName);
+                   
                     //window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${fileObj}`
                     var element = document.getElementById("outputVid");
                     element.setAttribute('href', "http://localhost:3000/static/"+res.fileName);
@@ -75,6 +119,7 @@
                     element.style.display = 'none';
                     // document.body.appendChild(element);
                     element.click();
+                    // download( res.fileName );
                 };
             })
         }

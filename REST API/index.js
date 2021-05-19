@@ -3,12 +3,13 @@ const multer = require('multer');
 const {spawn} = require('child_process');
 const fs = require('fs');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const path = require('path');
 var newFilename;
 app.use(express.json());
-
+app.use( '/assets', express.static('assets') );
+// app.use( '/uploads', express.static('uploads') );
 app.use('/static', express.static('templateImages'))
 app.use('/static', express.static('templateMusic'))
 app.use('/static',express.static('demoVideos'))
