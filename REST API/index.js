@@ -1,19 +1,21 @@
 const express = require('express');
 const multer = require('multer');
 const {spawn} = require('child_process');
-const fs = require('fs');
+// const fs = require('fs');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 const path = require('path');
+const { randomBytes, randomInt } = require('crypto');
 var newFilename;
 app.use(express.json());
 app.use( '/assets', express.static('assets') );
+app.use( '/navigate', express.static('navigate') );
 // app.use( '/uploads', express.static('uploads') );
 app.use('/static', express.static('templateImages'))
 app.use('/static', express.static('templateMusic'))
 app.use('/static',express.static('demoVideos'))
-app.use('/static',express.static('templateImages'))
+// app.use('/static',express.static('templateImages'))
 // app.use('/static',express.static('css'))
 // app.use('/static',express.static('js'))
 
@@ -75,7 +77,9 @@ const store = multer.diskStorage({
         cb(null,'./uploads');
     },
     filename: (req,file,cb)=>{
-        newFilename = Date.now()+"--"+file.originalname
+        var ext = file.originalname.split('.');
+        console.log(ext);
+        newFilename = Date.now()+"--"+Math.floor(Math.random() * 2000000) + "." + ext[ext.length - 1];
         cb(null,newFilename);
     }
 });
@@ -102,7 +106,13 @@ app.get('/preview',(req,res)=>{
     res.sendFile(path.join(__dirname, `navigate.html`));    
 })
 
+// app.get('/navigation', ( req, res ) => {
 
+//     const src = req.query.src;
+//     const data = req.query.data;
+//     const input_file = req.query.inputFile;
+//     res.sendFile(path.join(__dirname, `./navigate.html`));
+// })
 
 app.post('/upload', upload.single('input_file') ,(req, res) => {
     req.setTimeout(0);

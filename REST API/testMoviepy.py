@@ -2,8 +2,10 @@ from sys import argv
 from os import path, remove
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
+# from moviepy.multithreading import multithread_write_videofile
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
+from multiprocessing import cpu_count
 from math import ceil
 import shutil
 
@@ -14,6 +16,8 @@ FONTEFFECT = "fadeout"
 RESIZED_VIDEO = "resized.mp4"
 FRAME_FILENAME = "framePreview.png"
 LOGO = "logo.png"
+THREADS = cpu_count()
+lst = []
 
 # Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
 epicDict = {
@@ -70,8 +74,8 @@ if argv.__len__() > 5:
     OUTPUT_FILE_NAME = fontProperties[4]
     previewFlag = argv[6] if argv.__len__() == 7 else 0
 
-    print(fontSize, fontColor, fontEffect, fontStyle, OUTPUT_FILE_NAME, previewFlag)
-    print(templateName, textArray[0], videoInput, audioClip)
+    print("printing data >>> ",fontSize, fontColor, fontEffect, fontStyle, OUTPUT_FILE_NAME, previewFlag)
+    print("printing video info >>> ",templateName, textArray, videoInput, audioClip, previewFlag)
 
 
 def calculate_height(fontSize):
@@ -120,6 +124,7 @@ def resizeUserVideo(userVid):
 
         if path.exists(RESIZED_VIDEO):
             remove(RESIZED_VIDEO)
+            # shutil.rmtree('E:\Ad Generator\REST API', )
 
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
         duration = modifyDuration( userVid )
@@ -133,7 +138,7 @@ def resizeUserVideo(userVid):
         if previewFlag and duration:
             return final_clip
         elif previewFlag and not(duration):
-            return VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
+            return (VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10))
         else:
             return VideoFileClip(RESIZED_VIDEO, audio=False)
 
@@ -233,11 +238,21 @@ def assembleInputBasedVideo():
 
     if templateName in textMovements:
         if previewFlag:
-            result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setTextRL(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewVideo(LOGO)])
+            a = resizeUserVideo(videoInput)
+            b = returnMaskedClip(templateName)
+            c = previewVideo(LOGO)
+            result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
+            
         else:
-            result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setTextRL(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+            a = resizeUserVideo(videoInput)
+            print("resized video done")
+            b = returnMaskedClip(templateName)
+            print("masked clip done")
+            c = returnLogo(LOGO)
+            print("logo done")
+            result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
     else:
         if previewFlag:
             result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
@@ -252,11 +267,13 @@ def assembleInputBasedVideo():
 def composeVideo():
     result = assembleInputBasedVideo()
     result.audio = setAudio(audioClip)
+    print("audio done")
 
     if previewFlag:
-        result.set_duration(10).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
+        result.set_duration(10).write_videofile(OUTPUT_FILE_NAME, fps=15, threads=THREADS*2, logger=None)
     else:
-        result.set_duration(30).write_videofile(OUTPUT_FILE_NAME, fps=24, threads=8, logger=None)
+        print("THREADS = ", THREADS)
+        result.set_duration(30).write_videofile(OUTPUT_FILE_NAME, fps=15, threads=THREADS*2, logger=None)
 
     if path.exists( OUTPUT_FILE_NAME ):
         shutil.move( "./" + OUTPUT_FILE_NAME, "./demoVideos" )

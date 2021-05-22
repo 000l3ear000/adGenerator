@@ -1,4 +1,4 @@
-// var INPUT_FILE, TEMPLATE_NAME;
+
 var txtLength = 0;
 const inputs = {};
 
@@ -22,13 +22,12 @@ const size_type = (e) => {
             }, 3000);
         }
         else{
-            // addPara(":)")
+    
             INPUT_FILE = file;
             inputs.input_file = file;
             console.log(inputs);
         }
     }
-    // addPara("File " + file.name + " is " + file.size + " bytes in size");
 }
 
 function addPara(text) {
@@ -58,7 +57,6 @@ const getTextInputs = ( len ) => {
 
 const validateText = (e) => {
     
-    // console.log(e.target.value);
     if ( e.target.value.length < 6 ){
         var err_msg_div = document.getElementById("err_msg");
         err_msg_div.innerHTML = "The Text should be atleast 6 characters long";
@@ -84,7 +82,6 @@ const checkTrue = (e) => {
     else {
         textInputLength = 5;
     }
-
     txtLength = textInputLength;
 
     for ( var i = 0; i < textInputLength; i++ ){
@@ -95,21 +92,19 @@ const checkTrue = (e) => {
         tempTextInput.placeholder = "Text" + " " +(i+1); 
         tempTextInput.required = true;
         tempTextInput.maxLength = "20"
-        // tempTextInput.oninput = validateText();
         getTxt.appendChild( tempTextInput );
     }
 
     for ( var i = 0; i < textInputLength; i++ ){     
-        // var textInput = document.getElementById( "Text" + (i + 1) );
+       
         document.getElementById( "Text" + (i + 1) ).addEventListener("focusout", validateText);
         document.getElementById( "Text" + (i + 1) ).addEventListener("propertychange", validateText);
-        // textInput.onchange = validateText( "Text" + (i + 1) );
+        
     }
 
     TEMPLATE_NAME = templateName;
     inputs.template_name = templateName;
     console.log(inputs.template_name);
-    // inputs["input_text"] = []
 }
 
 const createTemplatesDiv = () => {
@@ -129,7 +124,7 @@ const createTemplatesDiv = () => {
         const ppd = "template" + (i + 1);
         tempInput.value = ppd;
         var tempImage = document.createElement("img");
-        tempImage.src = "https://ad-generator-backend.herokuapp.com/static/template" + ( i + 1 ) + ".png";
+        tempImage.src = "http://localhost:8080/static/template" + ( i + 1 ) + ".png";
         tempImage.onclick = checkTrue;
 
         tempDiv.classList.add("template_single");
@@ -142,28 +137,21 @@ const createTemplatesDiv = () => {
         tempDiv.appendChild(textDiv);
         
         templatesDiv.appendChild(tempDiv);
-       
-        
     }
-
-
 }
+
 document.getElementById("plan").addEventListener("change",()=>{
     inputs.template_music = document.getElementById("plan").value;
-    document.getElementById("templateMusic").src="https://ad-generator-backend.herokuapp.com/static/" + document.getElementById("plan").value;
+    document.getElementById("templateMusic").src="http://localhost:8080/static/" + document.getElementById("plan").value;
     console.log(">>>", inputs.template_music)
 })
 
 
 
 document.getElementById("fileInput").addEventListener("change", size_type);
-// console.log(inputs);
-
-// document.getElementById("fontColorPicker").addEventListener("change", printColorCode);
-// document.getElementById("template_container").addEventListener("load", createTemplatesDiv);
 window.onload = createTemplatesDiv;
 
-// document.getElementById("btn_next").addEventListener("click", console.log(inputs))
+
 const finalInputs = () => {
 
     inputs.template_music = document.getElementById("plan").value;
@@ -194,26 +182,23 @@ const finalInputs = () => {
             console.log(data);
 
             
-            fetch( "https://ad-generator-backend.herokuapp.com/upload", {
+            fetch( "http://localhost:8080/upload", {
                 method: 'POST',
                 body: data
             })
             .then( res => res.json() )
             .then( res => {
                 if( res.status == "success" ){
-                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${JSON.stringify(fileObj)}`
+
+                    window.location.href = `http://localhost:8080/navigate/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${JSON.stringify(fileObj)}`;
+
                 };
             })
             btn.style.backgroundColor = "rgb(26, 24, 24)";
-            btn.style.color = "#29f2e4"
-            // .then( res => res.json()
-            // .then( data => {
-            //     if ( data.status == "success" ){
-            //         console.log(data)
-            //         console.log("video generated >>> ", data.fileName);
-            //     }
-            // })
-            // )
-        }        }
+            btn.style.color = "#29f2e4";
+
+        }        
     }
+    
+}
            
