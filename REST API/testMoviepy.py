@@ -4,7 +4,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
-from epicDict import epicDict
+from adGeneratorConstants import epicDict, textMovements, textMovementsRight, videoFormats, imageFormats
 from multiprocessing import cpu_count
 from math import ceil
 import shutil
@@ -17,13 +17,6 @@ LOGO = "logo.png"
 THREADS = cpu_count()
 
 # Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
-
-textMovements = ['Template_7.webM', 'Template_8.webM',
-                 'Template_9.webM', 'Template_10.webM']
-textMovementsRight = [200, 0, 200, 0, 200]
-textMovementsLeft = [0, 200, 0, 200, 0]
-videoFormats = ['mp4', 'webM', 'mov', 'mpeg-4', 'flv', 'avi', 'mkv', 'wmv']
-imageFormats = ['jpeg', 'png', 'jpg', 'svg']
 
 if argv.__len__() > 5:
 
