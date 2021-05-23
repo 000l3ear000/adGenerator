@@ -2,9 +2,9 @@ from sys import argv
 from os import path, remove
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
-# from moviepy.multithreading import multithread_write_videofile
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
+from epicDict import epicDict
 from multiprocessing import cpu_count
 from math import ceil
 import shutil
@@ -12,45 +12,11 @@ import shutil
 HEIGHT = 920
 FONTSIZE = 70
 FONTCOLOR = "white"
-FONTEFFECT = "fadeout"
 RESIZED_VIDEO = ""
-FRAME_FILENAME = "framePreview.png"
 LOGO = "logo.png"
 THREADS = cpu_count()
-lst = []
 
 # Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
-epicDict = {
-    "Template_1.webM": [[4.8, 4.8, 6, 6, 3.5], 1, [81, 253, 234], 920],
-    "Template_2.webM": [[4.8, 4.8, 6, 6, 3.5], 1, [81, 253, 234], 920],
-
-    "Template_3.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
-    "Template_4.webM": [[3.8, 4.6, 6, 6.6, 6], 1, [80, 252, 236], 960],
-
-    "Template_5.webM": [[4.5, 6, 6, 4], 4.8, [71, 226, 211], 920],
-    "Template_6.webM": [[4.5, 6, 6, 4], 4.8, [71, 226, 211], 920],
-
-    "Template_7.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
-    "Template_8.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [82, 254, 238], 930],
-
-    "Template_9.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
-    "Template_10.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
-
-    "Template_11.webM": [[4.8, 4.8, 6, 6, 6.2], 0, [80, 252, 236], 930],
-    "Template_12.webM": [[4.5, 6, 6, 6], 3.8, [80, 252, 236], 930],
-
-    "Template_13.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
-    "Template_14.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
-
-    "Template_15.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
-    "Template_16.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
-
-    "Template_17.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
-    "Template_18.webM": [[3.8, 4.6, 6, 6.6, 6.6], 1, [80, 252, 236], 960],
-
-    "Template_19.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960],
-    "Template_20.webM": [[3.8, 4.6, 6, 6.6, 6.5], 1, [80, 252, 236], 960]
-}
 
 textMovements = ['Template_7.webM', 'Template_8.webM',
                  'Template_9.webM', 'Template_10.webM']
@@ -59,7 +25,6 @@ textMovementsLeft = [0, 200, 0, 200, 0]
 videoFormats = ['mp4', 'webM', 'mov', 'mpeg-4', 'flv', 'avi', 'mkv', 'wmv']
 imageFormats = ['jpeg', 'png', 'jpg', 'svg']
 
-# print(argv)
 if argv.__len__() > 5:
 
     templateName = argv[1]
@@ -122,7 +87,6 @@ def modifyDuration( vid ):
 
 def resizeUserVideo(userVid):
     if checkInputFile(userVid) == 1:
-            # shutil.rmtree('E:\Ad Generator\REST API', )
 
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
         duration = modifyDuration( userVid )
@@ -144,7 +108,6 @@ def resizeUserVideo(userVid):
             else:
                 return VideoFileClip(RESIZED_VIDEO, audio=False)
 
-        # return resizedVideo
     elif checkInputFile(userVid) == 2:
         if previewFlag:
             return ImageClip(userVid).resize((1080, 1080)).subclip(0, 10)
@@ -169,7 +132,6 @@ def checkEffect():
         return True
     else:
         return False
-
 
 def setText(fileName):
     clip_list = []
@@ -240,56 +202,45 @@ def assembleInputBasedVideo():
 
     if templateName in textMovements:
         if previewFlag:
-            a = resizeUserVideo(videoInput)
-            b = returnMaskedClip(templateName)
-            c = previewVideo(LOGO)
-            result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
-            a.close()
+            resizedVideo = resizeUserVideo(videoInput)
+            maskedVideo = returnMaskedClip(templateName)
+            previewedVideo = previewVideo(LOGO)
+            result = CompositeVideoClip([resizedVideo, maskedVideo, setTextRL(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
+            resizedVideo.close()
             
         else:
-            a = resizeUserVideo(videoInput)
-            print("resized video done")
-            b = returnMaskedClip(templateName)
-            print("masked clip done")
-            c = returnLogo(LOGO)
-            print("logo done")
-            result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
-            a.close()
+            resizedVideo = resizeUserVideo(videoInput)
+            maskedVideo = returnMaskedClip(templateName)
+            logoVideo = returnLogo(LOGO)
+            result = CompositeVideoClip([resizedVideo, maskedVideo, setTextRL(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), logoVideo])
+            resizedVideo.close()
     else:
         if previewFlag:
-            a = resizeUserVideo(videoInput)
-            b = returnMaskedClip(templateName)
-            c = previewVideo(LOGO)
-            result = CompositeVideoClip([a, b, setText(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
-            a.close()
+            resizedVideo = resizeUserVideo(videoInput)
+            maskedVideo = returnMaskedClip(templateName)
+            previewedVideo = previewVideo(LOGO)
+            result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
+            resizedVideo.close()
         else:
-            a = resizeUserVideo(videoInput)
-            b = returnMaskedClip(templateName)
-            c = returnLogo(LOGO)
-            result = CompositeVideoClip([a, b, setText(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
-            a.close()
+            resizedVideo = resizeUserVideo(videoInput)
+            maskedVideo = returnMaskedClip(templateName)
+            logoVideo = returnLogo(LOGO)
+            result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), logoVideo])
+            resizedVideo.close()
     
     return result
-
-
-def removeResizedVideo():
-    if path.exists(RESIZED_VIDEO):
-        remove(RESIZED_VIDEO)
-
 
 def composeVideo():
     result = assembleInputBasedVideo()
     result.audio = setAudio(audioClip)
-    print("audio done")
 
     if previewFlag:
         result.set_duration(10).write_videofile(OUTPUT_FILE_NAME, fps=15, threads=THREADS*2, logger=None)
     else:
-        print("THREADS = ", THREADS)
         result.set_duration(30).write_videofile(OUTPUT_FILE_NAME, fps=15, threads=THREADS*2, logger=None)
 
     if path.exists( OUTPUT_FILE_NAME ):
@@ -297,4 +248,3 @@ def composeVideo():
     
 
 composeVideo()
-# removeResizedVideo()
