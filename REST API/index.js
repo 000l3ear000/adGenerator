@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const {spawn} = require('child_process');
-// const fs = require('fs');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -170,19 +170,17 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
                 status : "success",
                 fileName : outputFileName
                 } );
-            }
 
-        // fs.unlink(uploadedFile, (err) => {
-        //     if (err) {
-        //         console.error(err)
-        //         return
-        //     }
-        //     else{
-        //         console.log(uploadedFile ,"Successfully removed")
-        //     }
-        // })}
-            
-            
+                fs.unlink(uploadedFile.slice(8, uploadedFile.length), (err) => {
+                    if (err) {
+                        console.error(err)
+                        return
+                    }
+                    else{
+                        console.log(uploadedFile.slice(8, uploadedFile.length) ,"Successfully removed")
+                    }
+                })
+            }
         
         else{
             res.json({

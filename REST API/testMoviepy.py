@@ -13,7 +13,7 @@ HEIGHT = 920
 FONTSIZE = 70
 FONTCOLOR = "white"
 FONTEFFECT = "fadeout"
-RESIZED_VIDEO = "resized.mp4"
+RESIZED_VIDEO = ""
 FRAME_FILENAME = "framePreview.png"
 LOGO = "logo.png"
 THREADS = cpu_count()
@@ -65,6 +65,7 @@ if argv.__len__() > 5:
     templateName = argv[1]
     textArray = argv[2].split(',')
     videoInput = argv[3]
+    RESIZED_VIDEO = argv[3][8:]
     audioClip = argv[4]
     fontProperties = argv[5].split(',')
     fontSize = int(fontProperties[0])
@@ -121,9 +122,6 @@ def modifyDuration( vid ):
 
 def resizeUserVideo(userVid):
     if checkInputFile(userVid) == 1:
-
-        if path.exists(RESIZED_VIDEO):
-            remove(RESIZED_VIDEO)
             # shutil.rmtree('E:\Ad Generator\REST API', )
 
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
@@ -138,9 +136,13 @@ def resizeUserVideo(userVid):
         if previewFlag and duration:
             return final_clip
         elif previewFlag and not(duration):
+            print("i was here manannnn2")
             return (VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10))
         else:
-            return VideoFileClip(RESIZED_VIDEO, audio=False)
+            if not(previewFlag):
+                return final_clip
+            else:
+                return VideoFileClip(RESIZED_VIDEO, audio=False)
 
         # return resizedVideo
     elif checkInputFile(userVid) == 2:
@@ -243,6 +245,7 @@ def assembleInputBasedVideo():
             c = previewVideo(LOGO)
             result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
+            a.close()
             
         else:
             a = resizeUserVideo(videoInput)
@@ -253,15 +256,29 @@ def assembleInputBasedVideo():
             print("logo done")
             result = CompositeVideoClip([a, b, setTextRL(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
+            a.close()
     else:
         if previewFlag:
-            result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewVideo(LOGO)])
+            a = resizeUserVideo(videoInput)
+            b = returnMaskedClip(templateName)
+            c = previewVideo(LOGO)
+            result = CompositeVideoClip([a, b, setText(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
+            a.close()
         else:
-            result = CompositeVideoClip([resizeUserVideo(videoInput), returnMaskedClip(templateName), setText(templateName).set_start(
-                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), returnLogo(LOGO)])
+            a = resizeUserVideo(videoInput)
+            b = returnMaskedClip(templateName)
+            c = returnLogo(LOGO)
+            result = CompositeVideoClip([a, b, setText(templateName).set_start(
+                returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), c])
+            a.close()
     
     return result
+
+
+def removeResizedVideo():
+    if path.exists(RESIZED_VIDEO):
+        remove(RESIZED_VIDEO)
 
 
 def composeVideo():
@@ -277,6 +294,7 @@ def composeVideo():
 
     if path.exists( OUTPUT_FILE_NAME ):
         shutil.move( "./" + OUTPUT_FILE_NAME, "./demoVideos" )
-
+    
 
 composeVideo()
+# removeResizedVideo()

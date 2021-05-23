@@ -59,10 +59,10 @@ const validateText = (e) => {
     
     if ( e.target.value.length < 6 ){
         var err_msg_div = document.getElementById("err_msg");
-        err_msg_div.innerHTML = "The Text should be atleast 6 characters long";
+        err_msg_div.innerHTML = "<h3>The Text should be atleast 6 characters long</h3>";
         setTimeout( () => {
             err_msg_div.innerHTML = '';
-        }, 3000);
+        }, 5000);
     }
 }
 
