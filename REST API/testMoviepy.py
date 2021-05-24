@@ -14,6 +14,7 @@ FONTSIZE = 70
 FONTCOLOR = "white"
 RESIZED_VIDEO = ""
 LOGO = "logo.png"
+WATERMARK = "watermark.png"
 THREADS = cpu_count()
 
 # Template_16.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout"
@@ -93,14 +94,11 @@ def resizeUserVideo(userVid):
         if previewFlag and duration:
             return final_clip
         elif previewFlag and not(duration):
-            print("i was here1")
             return VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
         else:
             if not(previewFlag) and duration:
-                print("i was here2")
                 return final_clip
             else:
-                print("i was here3")
                 return VideoFileClip(RESIZED_VIDEO, audio=False)
 
     elif checkInputFile(userVid) == 2:
@@ -125,6 +123,8 @@ def returnMaskedClip(fileName):
 def checkEffect():
     if fontEffect == "fadein":
         return True
+    elif fontEffect == "None":
+        return None
     else:
         return False
 
@@ -139,9 +139,11 @@ def setText(fileName):
 
         if checkEffect():
             txt_clip = fadein(txt_clip, 2, [255, 255, 0])
-        else:
+        elif checkEffect() == False:
             txt_clip = fadeout(txt_clip, 2, [255, 255, 0])
-        clip_list.append(txt_clip)
+            clip_list.append(txt_clip)
+        else:
+            clip_list.append(txt_clip)
 
     final_clip = concatenate_videoclips(clip_list)
     return final_clip
@@ -158,10 +160,14 @@ def setTextRL(fileName):
                     .margin(right=textMovementsRight[text], left=textMovementsLeft[text], opacity=0))
 
         if checkEffect():
+            print("abc")
             txt_clip = fadein(txt_clip, 2, [255, 255, 0])
-        else:
+        elif checkEffect() == False:
+            print("abcdd")
             txt_clip = fadeout(txt_clip, 2, [255, 255, 0])
-        clip_list.append(txt_clip)
+            clip_list.append(txt_clip)
+        else:
+            clip_list.append(txt_clip)
 
     final_clip = concatenate_videoclips(clip_list)
     return final_clip
@@ -187,10 +193,10 @@ def returnLogo(fileName):
 def previewVideo(fileName):
     logo = (ImageClip(fileName)
             .set_duration(10)
-            .resize(height=540)  # if you need to resize..
+            .resize(height=500)  # if you need to resize..
             .set_pos(("center"))
             )
-    logo.resize((540, 540))
+    logo.resize((500, 500))
     return logo
 
 def assembleInputBasedVideo():
@@ -199,7 +205,7 @@ def assembleInputBasedVideo():
         if previewFlag:
             resizedVideo = resizeUserVideo(videoInput)
             maskedVideo = returnMaskedClip(templateName)
-            previewedVideo = previewVideo(LOGO)
+            previewedVideo = previewVideo(WATERMARK)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setTextRL(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
             
@@ -213,7 +219,7 @@ def assembleInputBasedVideo():
         if previewFlag:
             resizedVideo = resizeUserVideo(videoInput)
             maskedVideo = returnMaskedClip(templateName)
-            previewedVideo = previewVideo(LOGO)
+            previewedVideo = previewVideo(WATERMARK)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
         else:

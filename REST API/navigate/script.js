@@ -13,7 +13,8 @@ var file = arr[2].inputFile;
 console.log("ISKO DEKHO >>>", temp);
 console.log("this is data sent >>>", file);
 
-document.onload = document.getElementById("preview-src").src = "http://localhost:8080/static/"+arr[0].src;
+window.onload = document.getElementById("preview-src").src = "http://localhost:8080/static/"+arr[0].src
+
 
 const upload = async () => {
     var data = new FormData()
@@ -30,16 +31,9 @@ const upload = async () => {
     .then( res => res.json() )
     .then( res => {
         if( res.status == "success" ){
-
-            // var element = document.getElementById("outputVid");
-            console.log(res.fileName);
             return res.fileName;
-            // element.setAttribute('href', "http://localhost:8080/static/" + res.fileName);
-            // element.style.display = 'none';
-            // element.click();
         };
     })
-    console.log(result);
     return result
 }
 
@@ -48,13 +42,13 @@ const insertLink = async () => {
     var vid = document.getElementById("videoGenerated");
     var h1Tag = document.createElement("h1");
     var h4Tag = document.createElement("h4");
+    var span = document.createElement("span");
     h1Tag.innerHTML = "Your video is being generated";
     h4Tag.innerHTML = "Please wait for 2-3 mins ...";
     vid.before( h1Tag );
     vid.before( h4Tag );
 
     var videoLink = document.createElement("a");
-    videoLink.setAttribute('download', "download");
     var gifSpinner = document.createElement("img");
     gifSpinner.src = "http://localhost:8080/assets/loading.gif";
     gifSpinner.style.height = "100px";
@@ -62,35 +56,29 @@ const insertLink = async () => {
     vid.appendChild(gifSpinner);
     const link = async () => {
         const result = await upload()
-        console.log(result);
         return result
     }
     (async () => {
         const videoName = await link();
-        console.log(videoName);
         videoLink.setAttribute('href', "http://localhost:8080/static/" + videoName);
-        videoLink.textContent = "here"
+        videoLink.textContent = "here";
+        videoLink.style.fontSize = "32px";
+        videoLink.style.fontStyle = "bold";
+        videoLink.style.display = "inline-block";
+        videoLink.setAttribute('target', '_blank');
+        // videoLink.setAttribute('download', "download");
         finalDiv.innerHTML = "";
+        vid.innerHTML = "";
         h1Tag.innerHTML = "Download your ad ";
+        h1Tag.style.display = "inline-block";
+        vid.style.whiteSpace = "nowrap";
+        vid.style.overflowX = "hidden";
+        span.textContent = " ";
         vid.appendChild(h1Tag);
-        vid.appendChild(videoLink);
+        vid.appendChild(span);
+        vid.appendChild(videoLink)
         finalDiv.appendChild(vid);
-        // vid.click();
     })();
-
-
-
-
-
-
-    // link().then(response => console.log(response));
-    // console.log(link);
-    // setTimeout( () => {
-    //     vid.innerHTML = "";
-
-    //     vid.appendChild( videoLink );
-    // }, 180000);
-
 }
 
 const stripe = Stripe('pk_test_51IuGGgHPVMu7FaWVTs3zB5xP5jQa1vSjifJMIsJ2LrjHhKQivQM1a0zuiOGlzumm23u6TBVZKrw7U1xO7LvOC4KP00FcfpRmxJ');
@@ -115,6 +103,10 @@ async function confirmPayment(clientSecret) {
         console.error(result.error);
     } else {
         console.log(result);
+        document.getElementById("card-element").innerHTML = "";
+        var btn_pay = document.getElementById("pay-button");
+        var parentNode = btn_pay.parentNode;
+        parentNode.removeChild(btn_pay);
         insertLink();
     }
 }
