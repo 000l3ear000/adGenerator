@@ -2,6 +2,8 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script defer src="https://js.stripe.com/v3/"></script>
+    <script defer src="script.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sample Video</title>
 
@@ -32,69 +34,12 @@
         </video>
     </div>
     
-    <button id="btn_buy" onclick="upload()" value="Buy" type="button">download</button>
-    <a download id = "outputVid"></a>
-
-    <script>
-        
-        const arr=[];
-        const data=location.search;
-        const urlParams = new URLSearchParams(data);
-        for (const [key, value] of urlParams) {
-            console.log(`${key}:${value}`);
-            const obj = {}
-            obj[key] = value;
-            arr.push(obj)
-        }
-        var temp = JSON.parse(arr[1].data);
-        var file = arr[2].inputFile;
-        console.log("ISKO DEKHO >>>", temp);
-        console.log("this is data sent >>>", file);
-
-        document.getElementById("preview-src").src = "http://db943c5b15dc.ngrok.io:8080/static/"+arr[0].src;
-
-        function download( filename ){
-          axios({
-              url:'http://127.0.0.1:80/static/' + filename,
-              method:'GET',
-              responseType: 'blob'
-        })
-        .then((response) => {
-             const url = window.URL
-             .createObjectURL(new Blob([response.data]));
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', 'output.mp4');
-                    document.body.appendChild(link);
-                    link.click();
-        })
-        }
-
-        const upload = () => {
-            var data = new FormData()
-            data.append('input_file', file);
-            data.append('inputs', JSON.stringify(temp));
-            console.log(data);
-            fetch( "http://localhost:8080/upload", {
-                method: 'POST',
-                headers:{
-                    flag : "true"
-                },
-                body: data
-            })
-            .then( res => res.json() )
-            .then( res => {
-                if( res.status == "success" ){
-
-                    var element = document.getElementById("outputVid");
-                    element.setAttribute('href', "http://localhost:8080/static/"+res.fileName);
-                    element.style.display = 'none';
-                    element.click();
-                };
-            })
-        }
-        
-    </script>
+    <div id="card-element" style="width: 400px;"></div>
+    <button id="pay-button">Pay</button>
+    <div id="finalDiv">
+        <div id="videoGenerated">
+        </div>
+    </div>
 
 </body>
 </html>

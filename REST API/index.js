@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const {spawn} = require('child_process');
+const stripe = require('stripe')('sk_test_51IuGGgHPVMu7FaWV7z0iAH3smkYIMpleISPKf04cLfw0JKOIse3GICvyaZPvc57Le3JBJEBavCVLwU48RB6jNPSP00muRF4pb9');
 const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 8080;
@@ -49,7 +50,7 @@ const checkTemplateName = ( template_name ) => {
         case "template9":
             return "Template_9.webM";
         case "template10":
-            return "Template_10.weebM";
+            return "Template_10.webM";
         case "template11":
             return "Template_11.webM";
         case "template12":
@@ -193,7 +194,14 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
     });
 })
 
-
+app.post('/payments', async (req, res) => {
+    const { client_secret } = await stripe.paymentIntents.create({
+      amount: 2500,
+      currency: 'usd',
+      payment_method_types: ['card'],
+    });
+    res.send(JSON.stringify({ clientSecret: client_secret }));
+});
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

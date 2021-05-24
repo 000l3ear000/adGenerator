@@ -1,10 +1,10 @@
 from sys import argv
-from os import path, remove
+from os import path
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
 from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips, ImageClip
 from moviepy.video.fx.mask_color import mask_color
 from moviepy.video.fx.all import fadein, fadeout
-from adGeneratorConstants import epicDict, textMovements, textMovementsRight, videoFormats, imageFormats
+from adGeneratorConstants import epicDict, textMovements, textMovementsRight, textMovementsLeft, videoFormats, imageFormats
 from multiprocessing import cpu_count
 from math import ceil
 import shutil
@@ -93,12 +93,14 @@ def resizeUserVideo(userVid):
         if previewFlag and duration:
             return final_clip
         elif previewFlag and not(duration):
-            print("i was here manannnn2")
-            return (VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10))
+            print("i was here1")
+            return VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
         else:
-            if not(previewFlag):
+            if not(previewFlag) and duration:
+                print("i was here2")
                 return final_clip
             else:
+                print("i was here3")
                 return VideoFileClip(RESIZED_VIDEO, audio=False)
 
     elif checkInputFile(userVid) == 2:
@@ -200,7 +202,6 @@ def assembleInputBasedVideo():
             previewedVideo = previewVideo(LOGO)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setTextRL(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
-            resizedVideo.close()
             
         else:
             resizedVideo = resizeUserVideo(videoInput)
@@ -208,7 +209,6 @@ def assembleInputBasedVideo():
             logoVideo = returnLogo(LOGO)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setTextRL(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), logoVideo])
-            resizedVideo.close()
     else:
         if previewFlag:
             resizedVideo = resizeUserVideo(videoInput)
@@ -216,15 +216,13 @@ def assembleInputBasedVideo():
             previewedVideo = previewVideo(LOGO)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo])
-            resizedVideo.close()
         else:
             resizedVideo = resizeUserVideo(videoInput)
             maskedVideo = returnMaskedClip(templateName)
             logoVideo = returnLogo(LOGO)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), logoVideo])
-            resizedVideo.close()
-    
+
     return result
 
 def composeVideo():
