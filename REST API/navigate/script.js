@@ -9,22 +9,24 @@ for (const [key, value] of urlParams) {
     arr.push(obj)
 }
 var temp = JSON.parse(arr[1].data);
-var file = arr[2].inputFile;
+var vidFilename = arr[2].inputFile;
+var logoFilename = arr[3].logoFile;
 console.log("ISKO DEKHO >>>", temp);
-console.log("this is data sent >>>", file);
+// console.log("this is data sent >>>", file);
 
 window.onload = document.getElementById("preview-src").src = "http://localhost:8080/static/"+arr[0].src
 
 
 const upload = async () => {
     var data = new FormData()
-    data.append('input_file', file);
     data.append('inputs', JSON.stringify(temp));
     console.log(data);
     const result = await fetch( "http://localhost:8080/upload", {
         method: 'POST',
         headers:{
-            flag : "true"
+            flag : "true",
+            video: vidFilename,
+            logo: logoFilename
         },
         body: data
     })
@@ -52,7 +54,8 @@ const insertLink = async () => {
     var gifSpinner = document.createElement("img");
     gifSpinner.src = "http://localhost:8080/assets/loading.gif";
     gifSpinner.style.height = "100px";
-    gifSpinner.style.width = "300px";
+    gifSpinner.style.width = "100px";
+    // gifSpinner.style.marginLeft = "150px";
     vid.appendChild(gifSpinner);
     const link = async () => {
         const result = await upload()
@@ -65,8 +68,7 @@ const insertLink = async () => {
         videoLink.style.fontSize = "32px";
         videoLink.style.fontStyle = "bold";
         videoLink.style.display = "inline-block";
-        videoLink.setAttribute('target', '_blank');
-        // videoLink.setAttribute('download', "download");
+        videoLink.setAttribute('download', "download");
         finalDiv.innerHTML = "";
         vid.innerHTML = "";
         h1Tag.innerHTML = "Download your ad ";
@@ -102,7 +104,6 @@ async function confirmPayment(clientSecret) {
     if (result.error) {
         console.error(result.error);
     } else {
-        console.log(result);
         document.getElementById("card-element").innerHTML = "";
         var btn_pay = document.getElementById("pay-button");
         var parentNode = btn_pay.parentNode;

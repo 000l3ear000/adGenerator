@@ -13,7 +13,7 @@ HEIGHT = 920
 FONTSIZE = 70
 FONTCOLOR = "white"
 RESIZED_VIDEO = ""
-LOGO = "logo.png"
+LOGO = ""
 WATERMARK = "watermark.png"
 THREADS = cpu_count()
 
@@ -32,9 +32,10 @@ if argv.__len__() > 5:
     fontEffect = fontProperties[2]
     fontStyle = fontProperties[3]
     OUTPUT_FILE_NAME = fontProperties[4]
+    LOGO = fontProperties[5]
     previewFlag = argv[6] if argv.__len__() == 7 else 0
 
-    print("printing data >>> ",fontSize, fontColor, fontEffect, fontStyle, OUTPUT_FILE_NAME, previewFlag)
+    print("printing data >>> ",fontSize, fontColor, fontEffect, fontStyle, OUTPUT_FILE_NAME, LOGO, previewFlag)
     print("printing video info >>> ",templateName, textArray, videoInput, audioClip, previewFlag)
 
 

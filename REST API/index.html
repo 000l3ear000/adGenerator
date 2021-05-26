@@ -3,15 +3,26 @@
 <head>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet" />
+	<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Ad Generator</title>
 	<link rel="stylesheet" href="./assets/index.css">
 </head>
-<body>	
+<body>
+	<h1 style="font-size: 40px;color: white;font-family: 'Muli-Black';">Upload Logo</h1>
+	
+	<label class="btn btn-default inputLabel btn-sm center-block btn-file">
+	<i class="fa fa-upload fa-2x" aria-hidden="true"></i>
+	<input type="file" id="fileLogo" style="display: none;">
+	</label>
 
-	<h1 style="font-size: 40px;color: white;font-family: 'Lato', sans-serif;">Upload Image/Video</h1>
+
+	
+
+
+	<h1 style="font-size: 40px;color: white;font-family: 'Muli-Black';">Upload Image/Video</h1>
 	
 	<label class="btn btn-default inputLabel btn-sm center-block btn-file">
 	<i class="fa fa-upload fa-2x" aria-hidden="true"></i>
@@ -19,15 +30,15 @@
 	</label>
 
 
-	<h1 style="font-size: 40px;color: white;font-family: 'Lato', sans-serif;">Select a Template</h1>
+	<h1 style="font-size: 40px;color: white;font-family: 'Muli-Black';">Select a Template</h1>
 
 	<div id="template_container">
 	</div>
 
-	<h1 style="font-size: 40px;color: white;font-family: 'Lato', sans-serif;">Select Music</h1>
+	<h1 style="font-size: 40px;color: white;font-family: 'Muli-Black';">Select Music</h1>
 	<div id="template_music">
 		<label for="music_selection">Select Music</label>
-		<select name="plan" id="plan">
+		<select name="plan" style="font-family: 'Muli-Black';" id="plan">
 			<option value="None.mp3" selected>None</option>
 			<option value="Cute.mp3">Music 1</option>
 			<option value="Motive.mp3" >Music 2</option>
@@ -46,13 +57,13 @@
 	<form id="textInputs">
 	</form>
 
-	<div id="err_msg" style="color: red;">
+	<div id="err_msg" style="font-family: 'Muli-Black'; color: red;">
 
 	</div>
 
 	<div>
 		<label class="tag" >Select Font Size</label>
-		<select name="fontSizeOptions" id="fontSizes">
+		<select style="font-family: 'Muli-Black';" name="fontSizeOptions" id="fontSizes">
 			<option value="50" selected>50</option>
 			<option value="60" >60</option>
 			<option value="70" >70</option>
@@ -61,7 +72,7 @@
 	</div>
 	<div>
 		<label class="tag">Select Music</label>
-		<select name="fontStyleOptions" id="fontStyles">
+		<select name="fontStyleOptions" style="font-family: 'Muli-Black';" id="fontStyles">
 			<optgroup>
 				<option value="Arial" selected>Arial</option>
 				<option value="Arial-Bold" >Arial Bold</option>
@@ -75,7 +86,7 @@
 
 	<div>
 		<label class="tag" >Select Text Color</label>
-		<select name="fontColorOptions" id="fontColor">
+		<select name="fontColorOptions" style="font-family: 'Muli-Black';" id="fontColor">
 			<option value="white" selected>White</option>
 			<option value="red" >Red</option>
 			<option value="blue" >Blue</option>
@@ -88,7 +99,7 @@
 
 	<div>
 		<label class="tag" >Select Font Effect</label>
-		<select name="fontFadeEffectOptions" id="fontFadeEffect">
+		<select name="fontFadeEffectOptions" style="font-family: 'Muli-Black';" id="fontFadeEffect">
 			<option value="None" selected>None</option>
 			<option value="fadeout">Fade Out</option>
 			<option value="fadein">Fade In</option>
@@ -96,7 +107,7 @@
 	</div>
 
 	<div class="container">
-		<button type="Button" class="button3" id="btn_next" onclick=finalInputs()>NEXT</button>
+		<button type="Button" style="font-family: 'Muli-Black';" class="button3" id="btn_next" onclick=finalInputs()>NEXT STEP</button>
 	</div>
 
 

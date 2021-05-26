@@ -6,9 +6,10 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 8080;
 
+const supportedImageExt = ['jpeg', 'png', 'jpg', 'svg'];
 const path = require('path');
 const { randomBytes, randomInt } = require('crypto');
-var newFilename;
+var newFilename = [];
 app.use(express.json());
 app.use( '/assets', express.static('assets') );
 app.use( '/navigate', express.static('navigate') );
@@ -79,9 +80,10 @@ const store = multer.diskStorage({
     },
     filename: (req,file,cb)=>{
         var ext = file.originalname.split('.');
-        console.log(ext);
-        newFilename = Date.now()+"--"+Math.floor(Math.random() * 2000000) + "." + ext[ext.length - 1];
-        cb(null,newFilename);
+        console.log("i was ext", ext);
+        newFilename.push( Date.now()+"--"+Math.floor(Math.random() * 2000000) + "." + ext[ext.length - 1] );
+        console.log("error generated");
+        cb(null,newFilename[newFilename.length - 1]);
     }
 });
 
@@ -115,7 +117,7 @@ app.get('/preview',(req,res)=>{
 //     res.sendFile(path.join(__dirname, `./navigate.html`));
 // })
 
-app.post('/upload', upload.single('input_file') ,(req, res) => {
+app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
     req.setTimeout(0);
     flag = false;
     if ( req.headers?.flag == "true" ){
@@ -125,11 +127,25 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
     console.log("done");
     // running python script
     console.log(newFilename);
+    console.log("This the filenames array >>> ", newFilename);
     const data = req.body;
     console.log("raw----->>>>>>",data["input_file"])
     const temp = JSON.parse( data["inputs"] );
     console.log("Parsed-------->",temp);
-    const uploadedFile = 'uploads/' + newFilename;
+    var uploadedFile=""; 
+    var logoFile="";
+    if(newFilename.length == 2){
+        uploadedFile = 'uploads/' + newFilename[1];
+        logoFile= 'uploads/' + newFilename[0];
+    }
+    else{
+        console.log("i was in else ");
+        uploadedFile = req.headers.video;
+        logoFile= req.headers.logo;
+    }
+    newFilename=[];
+    console.log("filename >>> ", uploadedFile);
+    console.log("filename logo >>> ", logoFile);
     const templateName = checkTemplateName( temp.template_name );
     const templateMusic = 'templateMusic/' + temp.template_music;
     const textInputs = modifyTextInput( temp.text_inputs ); 
@@ -148,12 +164,12 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
     // // spawn new child process to call the python script
     if ( flag ){
 
-        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName }`]);
+        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName },${ logoFile }`]);
     }
 
     else{
 
-        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName }`, 1]);
+        var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName },${ logoFile }`, 1]);
     }
 
     // const python = spawn('python', ['--version'])
@@ -169,18 +185,25 @@ app.post('/upload', upload.single('input_file') ,(req, res) => {
         if ( code == 0 ){
             res.json( {
                 status : "success",
-                fileName : outputFileName
+                fileName : outputFileName,
+                file_video: uploadedFile,
+                file_logo: logoFile
+
                 } );
 
-                fs.unlink(uploadedFile.slice(8, uploadedFile.length), (err) => {
-                    if (err) {
-                        console.error(err)
-                        return
-                    }
-                    else{
-                        console.log(uploadedFile.slice(8, uploadedFile.length) ,"Successfully removed")
-                    }
-                })
+                var ext = uploadedFile.split('.')
+                if ( !supportedImageExt.includes(ext[ext.length - 1]) ){
+                    
+                    fs.unlink(uploadedFile.slice(8, uploadedFile.length), (err) => {
+                        if (err) {
+                            console.error(err)
+                            return
+                        }
+                        else{
+                            console.log(uploadedFile.slice(8, uploadedFile.length) ,"Successfully removed")
+                        }
+                    })
+                }
             }
         
         else{

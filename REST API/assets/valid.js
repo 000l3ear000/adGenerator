@@ -1,6 +1,13 @@
 
 var txtLength = 0;
 const inputs = {};
+const tooltips = [
+    " 0-3 seconds means the wow factor ",
+    "3-6 seconds showing a problem.", 
+    " 6-9 seconds telling the solution of this product.", 
+    "9-12 seconds tell the benefits of this product.", 
+    "12-15 seconds tell one extra benefit or solution."
+];
 
 const size_type = (e) => {
     const supportedVidExt = ['mp4', 'webM', 'mov', 'mpeg-4', 'flv', 'avi', 'mkv', 'wmv', 'quicktime'];
@@ -23,8 +30,34 @@ const size_type = (e) => {
         }
         else{
     
-            INPUT_FILE = file;
             inputs.input_file = file;
+            console.log(inputs);
+        }
+    }
+}
+
+
+const logo_size_type = (e) => {
+    const supportedLogoExt = ['jpeg', 'png', 'jpg', 'svg'];
+    const file = e.target.files[0];
+    var arr = file.type.split('/');
+    
+    if( !(arr[0]=="image" && supportedLogoExt.includes(arr[1]) )){
+        addPara( "File type is not supported" );
+
+    }
+    else {
+        if( (file.size / 1024) / 1024 > 5 ){
+            // addPara( "file is too large, Max file size is 10 MB" );
+            var err_msg_div = document.getElementById("err_msg");
+            err_msg_div.innerHTML = "file is too large, Max file size is 5 MB";
+            setTimeout( () => {
+                err_msg_div.innerHTML = '';
+            }, 3000);
+        }
+        else{
+    
+            inputs.logo_file = file;
             console.log(inputs);
         }
     }
@@ -62,7 +95,7 @@ const validateText = (e) => {
         err_msg_div.innerHTML = "<h3>The Text should be atleast 6 characters long</h3>";
         setTimeout( () => {
             err_msg_div.innerHTML = '';
-        }, 5000);
+        }, 4000);
     }
 }
 
@@ -84,17 +117,37 @@ const checkTrue = (e) => {
     }
     txtLength = textInputLength;
 
+    // var mainDiv = document.createElement("div");
+    getTxt.classList.add("vad_list_content_holder");
+
     for ( var i = 0; i < textInputLength; i++ ){
         
         var tempTextInput = document.createElement("input");
+        var div = document.createElement("div");
+        var divText = document.createElement("div");
+        var iTag = document.createElement("i");
+        var span = document.createElement("span");
+        div.classList.add("vad_text_tooltip");
+        divText.classList.add("vad_text_field");
+        iTag.classList.add("fas");
+        iTag.classList.add("fa-info-circle");
+        iTag.classList.add("vad-tooltip-icon");
+        span.classList.add("vad-tooltip-text");
+        span.textContent = tooltips[i];
+        iTag.appendChild(span);
+        div.appendChild(iTag);
         tempTextInput.type = "text";
         tempTextInput.id = "Text" + (i + 1);
         tempTextInput.placeholder = "Text" + " " +(i+1); 
         tempTextInput.required = true;
-        tempTextInput.maxLength = "20"
-        getTxt.appendChild( tempTextInput );
+        tempTextInput.maxLength = "20";
+        tempTextInput.classList.add("vad_text_input");
+        divText.appendChild( tempTextInput );
+        divText.appendChild( div );
+        getTxt.appendChild( divText );
+        // getTxt.appendChild( tempTextInput );
+        // mainDiv.appendChild(divText);
     }
-
     for ( var i = 0; i < textInputLength; i++ ){     
        
         document.getElementById( "Text" + (i + 1) ).addEventListener("focusout", validateText);
@@ -116,6 +169,7 @@ const createTemplatesDiv = () => {
         var imgInputDiv = document.createElement("div");
         var text = document.createElement("h3");
         text.textContent="Template "+ (i + 1);
+        text.style.fontFamily = 'Muli-Black';
         textDiv.appendChild(text);
         var tempDiv = document.createElement("div");
         var tempInput = document.createElement("input");
@@ -149,6 +203,7 @@ document.getElementById("plan").addEventListener("change",()=>{
 
 
 document.getElementById("fileInput").addEventListener("change", size_type);
+document.getElementById("fileLogo").addEventListener("change", logo_size_type);
 window.onload = createTemplatesDiv;
 
 
@@ -176,10 +231,12 @@ const finalInputs = () => {
             console.log(inputs);
             console.log("navigate now!!")
             const fileObj = inputs.input_file;
+            const logoObj = inputs.logo_file;
             var data = new FormData()
+            data.append('input_file', logoObj);
             data.append('input_file', fileObj);
             data.append('inputs', JSON.stringify(inputs));
-            console.log(data);
+            console.log("This is data being sent >>>" , data);
 
             
             fetch( "http://localhost:8080/upload", {
@@ -190,7 +247,7 @@ const finalInputs = () => {
             .then( res => {
                 if( res.status == "success" ){
 
-                    window.location.href = `http://localhost:8080/navigate/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${JSON.stringify(fileObj)}`;
+                    window.location.href = `http://localhost:8080/navigate/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${res.file_video}&logoFile=${res.file_logo}`;
 
                 };
             })

@@ -200,8 +200,9 @@ const finalInputs = () => {
             })
             .then( res => res.json() )
             .then( res => {
+        
                 if( res.status == "success" ){
-                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${JSON.stringify(fileObj)}`
+                    window.location.href=`file:///E:/Ad%20Generator/REST%20API/navigate.html?src=${res.fileName}&data=${JSON.stringify(inputs)}&inputFile=${req.video}`
                 };
             })
             btn.style.backgroundColor = "rgb(26, 24, 24)";
