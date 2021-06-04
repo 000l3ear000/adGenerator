@@ -22,10 +22,6 @@
         }
     </style>
 
-    <script src=
-        "https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js">
-    </script>
-
 </head>
 <body>
 
@@ -56,25 +52,6 @@
         console.log("this is data sent >>>", file);
 
         document.getElementById("preview-src").src = "http://localhost:3000/static/"+arr[0].src;
-        // function download(file, text) {
-              
-        //       //creating an invisible element
-        //       var element = document.createElement('a');
-        //       element.setAttribute('href', 
-        //       'data:text/plain;charset=utf-8,'
-        //       + encodeURIComponent(text));
-        //       element.setAttribute('download', file);
-              
-        //       // Above code is equivalent to
-        //       // <a href="path of file" download="file name">
-              
-        //       document.body.appendChild(element);
-  
-        //       //onClick property
-        //       element.click();
-              
-        //       document.body.removeChild(element);
-        // }
 
         function download( filename ){
           axios({

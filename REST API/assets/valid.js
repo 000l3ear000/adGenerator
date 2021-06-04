@@ -73,13 +73,15 @@ const getTextInputs = ( len ) => {
     var flag = 1;
     const textArray = [];
     for ( var i = 0; i < len; i++ ){
+        lst = [];
         const tempTextInput = document.getElementById("Text" + (i + 1));
         if(tempTextInput.value.length < 6){
             flag = 0;
             break
         }
         else{
-            textArray.push(tempTextInput.value);
+            lst.push(tempTextInput.value);
+            textArray.push(lst);
         }
     }
     if(flag){
@@ -145,8 +147,6 @@ const checkTrue = (e) => {
         divText.appendChild( tempTextInput );
         divText.appendChild( div );
         getTxt.appendChild( divText );
-        // getTxt.appendChild( tempTextInput );
-        // mainDiv.appendChild(divText);
     }
     for ( var i = 0; i < textInputLength; i++ ){     
        

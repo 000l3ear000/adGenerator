@@ -10,42 +10,9 @@ from math import ceil
 import shutil
 
 
-RESIZED_VIDEO = "resized.mp4"
-lst = []
-videoInput = "video1.mp4"
+RESIZED_VIDEO = "Template 1.mov";
 
-print("abc")
-# python .\testMoviepy.py Template_10.webM "Text 1","Text 2","Text 3","Text 4","Text 5" video1.mp4 Cute.mp3 "50","green","fadeout","Courier-New","ad.mp4" 1
-def resizeUserVideo(userVid, q):
-   
-
-    if path.exists(RESIZED_VIDEO):
-        remove(RESIZED_VIDEO)
-
-        ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
-
-        print("i wa sher")
-        result = VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
-        lst.append(result)
-        q.put(lst)
-        print("result entered")
-
-def f1():
-    q = Queue()
-    a = Process(target=resizeUserVideo, args=(videoInput,q))
-    a.start()
-    print(q.get())
-    # print(lst[0])
-    a.join()
-    print("ok")
-    print(q.get())
-    # print(lst[0])
-
-
-if __name__ == '__main__':
-    set_start_method("spawn")
-    cb = Process(target=f1)
-    cb.start()
-    # print(lst[0])
-    cb.join()
-    # print(lst[0])
+for i in range( 20 ):
+    video = VideoFileClip( "Template " + str( i  + 1 ) + ".mov" )
+    res = CompositeVideoClip([video])
+    res.write_videofile( "Template_" + str( i + 1 ) + ".webM", bitrate="50000k", fps=24 )

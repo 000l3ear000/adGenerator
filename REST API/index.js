@@ -89,11 +89,14 @@ const store = multer.diskStorage({
 
 const modifyTextInput=(arr)=>{
     var st="";
+    st += '['; 
     for(i=0;i<arr.length;i++){
         st+="'"+arr[i]+"'"+",";
     }
+    st = st.slice(0,st.length-1);
+    st += ']'
     console.log(st);
-    return st.slice(0,st.length-1);
+    return st
 }
 
 const upload = multer({  storage: store  });
@@ -171,6 +174,8 @@ app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
 
         var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName },${ logoFile }`, 1]);
     }
+
+    // [["Text 1,,,,,,,"], ["Text 2"], ["Text 3"], ["TExt 4"], ["Text 5"]]
 
     // const python = spawn('python', ['--version'])
     // // collect data from script
