@@ -1,32 +1,37 @@
+const PRICE=605;
 const express = require('express');
 const multer = require('multer');
 const {spawn} = require('child_process');
-const stripe = require('stripe')('sk_test_51IuGGgHPVMu7FaWV7z0iAH3smkYIMpleISPKf04cLfw0JKOIse3GICvyaZPvc57Le3JBJEBavCVLwU48RB6jNPSP00muRF4pb9');
+const stripe = require('stripe')('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');
 const fs = require('fs');
+const https = require("https");
+var cors = require('cors')
 const app = express();
 const port = process.env.PORT || 8080;
 
+
+app.use(cors());
 const supportedImageExt = ['jpeg', 'png', 'jpg', 'svg'];
 const path = require('path');
 const { randomBytes, randomInt } = require('crypto');
 var newFilename = [];
+var allPaymentIntents = [];
 app.use(express.json());
 app.use( '/assets', express.static('assets') );
 app.use( '/navigate', express.static('navigate') );
 // app.use( '/uploads', express.static('uploads') );
-app.use('/static', express.static('templateImages'))
-app.use('/static', express.static('templateMusic'))
-app.use('/static',express.static('demoVideos'))
-// app.use('/static',express.static('templateImages'))
-// app.use('/static',express.static('css'))
-// app.use('/static',express.static('js'))
+app.use('/static', express.static('templateImages'));
+app.use('/static', express.static('templateMusic'));
+app.use('/static', express.static('templateVideos'));
+app.use('/static',express.static('demoVideos'));
 
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-    res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, flag, access-control-allow-origin,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-    res.header("Access-Control-Allow-Origin", "*");
-    next();
-});
+
+// app.use((req, res, next) => {
+//     res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+//     res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, flag, access-control-allow-origin,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+//     res.header("Access-Control-Allow-Origin", "*");
+//     next();
+// });
 
 
 const checkTemplateName = ( template_name ) => {
@@ -64,14 +69,6 @@ const checkTemplateName = ( template_name ) => {
             return "Template_15.webM";
         case "template16":
             return "Template_16.webM";
-        case "template17":
-            return "Template_17.webM";
-        case "template18":
-            return "Template_18.webM";
-        case "template19":
-            return "Template_19.webM";
-        case "template20":
-            return "Template_20.webM";
     }
 }
 const store = multer.diskStorage({
@@ -101,9 +98,6 @@ const modifyTextInput=(arr)=>{
 
 const upload = multer({  storage: store  });
 
-// app.get('/getimage',(req,res)=>{
-//     res.sendFile(path.join(__dirname, "/uploads/1620348016104--sample-mp4-file.mp4"));
-// })
 
 app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname, "./index.html"));
@@ -112,13 +106,6 @@ app.get('/preview',(req,res)=>{
     res.sendFile(path.join(__dirname, `navigate.html`));    
 })
 
-// app.get('/navigation', ( req, res ) => {
-
-//     const src = req.query.src;
-//     const data = req.query.data;
-//     const input_file = req.query.inputFile;
-//     res.sendFile(path.join(__dirname, `./navigate.html`));
-// })
 
 app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
     req.setTimeout(0);
@@ -154,14 +141,13 @@ app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
     const textInputs = modifyTextInput( temp.text_inputs ); 
     const fontColor = temp.font_color;
     const fontStyle = temp.font_style;
-    const fontFade = temp.font_fade;
+    const fontFade = "None";
     const fontSize = temp.font_size;
     // newFilename = Date.now()+"--"+file.originalname
     console.log( templateName, templateMusic, textInputs, fontColor, fontStyle, fontFade );
 
     console.log(temp);
-    // console.log(JSON.parse(temp));
-    // console.log(JSON.stringify(data["inputs"]));
+
     const outputFileName = Date.now()+"--ad"+'.mp4';
     var dataToSend;
     // // spawn new child process to call the python script
@@ -174,8 +160,6 @@ app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
 
         var python = spawn('python', ['testMoviepy.py', templateName, textInputs, uploadedFile, templateMusic, `${ fontSize },${ fontColor },${ fontFade },${ fontStyle },${ outputFileName },${ logoFile }`, 1]);
     }
-
-    // [["Text 1,,,,,,,"], ["Text 2"], ["Text 3"], ["TExt 4"], ["Text 5"]]
 
     // const python = spawn('python', ['--version'])
     // // collect data from script
@@ -197,7 +181,7 @@ app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
                 } );
 
                 var ext = uploadedFile.split('.')
-                if ( !supportedImageExt.includes(ext[ext.length - 1]) ){
+                if ( !supportedImageExt.includes(ext[ext.length - 1].toLowerCase()) ){
                     
                     fs.unlink(uploadedFile.slice(8, uploadedFile.length), (err) => {
                         if (err) {
@@ -223,13 +207,47 @@ app.post('/upload', upload.array('input_file', 2) ,(req, res) => {
 })
 
 app.post('/payments', async (req, res) => {
-    const { client_secret } = await stripe.paymentIntents.create({
-      amount: 2500,
-      currency: 'usd',
-      payment_method_types: ['card'],
-    });
-    res.send(JSON.stringify({ clientSecret: client_secret }));
+    if ( req.headers?.payment == 'card' ){
+        var { client_secret } = await stripe.paymentIntents.create({
+          amount: PRICE,
+          currency: 'eur',
+          payment_method_types: ['card'],
+          
+        });
+        console.log("this is client secret >>> ", client_secret);
+        res.send(JSON.stringify({ clientSecret: client_secret }));
+    }
+
+    else if ( req.headers?.payment == 'ideal' ){
+        var { client_secret } = await stripe.paymentIntents.create({
+            amount: PRICE,
+            currency: 'eur',
+            payment_method_types: ['ideal'],
+          });
+          console.log("this is client secret >>> ", client_secret);
+          allPaymentIntents.push( client_secret );
+          res.send(JSON.stringify({ clientSecret: client_secret }));
+    }
 });
 
+app.post( '/getPaymentIntent', async ( req, res ) => {
+    if ( req.headers?.payment_intent ){
+        if ( allPaymentIntents.includes( req.headers.payment_intent ) ){
+            res.send( "success" );
+        }
+        else{
+            res.send( "failed" );
+        }
+    }
+    if ( allPaymentIntents.length > 100 ) {
+        allPaymentIntents = [];
+    }
+} )
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+const server = https.createServer({
+    key: fs.readFileSync(path.join(__dirname, 'cert', 'privkey.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+}, app)
+
+server.listen(443, ()  => console.log("Secure server on"));
+// app.listen(port, () => console.log(`Example app listening on port ${port}!`))

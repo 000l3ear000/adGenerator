@@ -1,4 +1,4 @@
-import ast
+from ast import literal_eval
 from sys import argv
 from os import path
 from moviepy.video.io.ffmpeg_tools import ffmpeg_resize
@@ -23,7 +23,7 @@ THREADS = cpu_count()
 if argv.__len__() > 5:
 
     templateName = argv[1]
-    textArray = ast.literal_eval(argv[2])
+    textArray = literal_eval(argv[2])
     videoInput = argv[3]
     RESIZED_VIDEO = argv[3][8:]
     audioClip = argv[4]
@@ -37,7 +37,7 @@ if argv.__len__() > 5:
     previewFlag = argv[6] if argv.__len__() == 7 else 0
 
     print("printing data >>> ",fontSize, fontColor, fontEffect, fontStyle, OUTPUT_FILE_NAME, LOGO, previewFlag)
-    print("printing video info >>> ",templateName, textArray, videoInput, RESIZED_VIDEO, audioClip, previewFlag)
+    print("printing video info >>> ",templateName, textArray, videoInput, audioClip, previewFlag)
 
 
 def calculate_height(fontSize):
@@ -64,9 +64,9 @@ def returnHeight(templateName):
 
 def checkInputFile(fileName):
     ext = fileName.split('.')
-    if ext[1] in videoFormats:
+    if ext[1].lower() in videoFormats:
         return 1
-    elif ext[1] in imageFormats:
+    elif ext[1].lower() in imageFormats:
         return 2
     else:
         return 0
@@ -79,34 +79,28 @@ def modifyDuration( vid ):
         else:
             return ceil( 30 / duration )
     else:
-        return False
+        return 0
 
 def resizeUserVideo(userVid):
     if checkInputFile(userVid) == 1:
-        print("i was here yahooo")
+
         ffmpeg_resize(userVid, RESIZED_VIDEO, [1080, 1080])
         duration = modifyDuration( userVid )
         clips = []
-        print("i was here yahooo 1")
         if duration:
-            print("i was here yahooo 2")
             for i in range(duration):
                 clip = VideoFileClip( RESIZED_VIDEO, audio=False )
                 clips.append(clip)
             final_clip = concatenate_videoclips( clips )
         
         if previewFlag and duration:
-            print("i was here yahooo 3")
             return final_clip
         elif previewFlag and not(duration):
-            print("i was here yahooo 4")
             return VideoFileClip(RESIZED_VIDEO, audio=False).subclip(0, 10)
         else:
-            print("i was here yahooo 5")
             if not(previewFlag) and duration:
                 return final_clip
             else:
-                print("i was here yahooo 6")
                 return VideoFileClip(RESIZED_VIDEO, audio=False)
 
     elif checkInputFile(userVid) == 2:
@@ -139,11 +133,12 @@ def checkEffect():
 def setText(fileName):
     clip_list = []
     timingArray = returnTextTiming(fileName)
+
     for text in range(timingArray.__len__()):
         # slicing the array to exlude double quotes
-        print("printing text >>> ", textArray[text])
         txt_clip = TextClip(textArray[text], fontsize=fontSize, font=fontStyle,
                             color=fontColor).set_duration(timingArray[text])
+
         if checkEffect() == True:
             txt_clip = fadein(txt_clip, 2, [255, 255, 0])
             clip_list.append(txt_clip)
@@ -160,9 +155,7 @@ def setText(fileName):
 def setTextRL(fileName):
     clip_list = []
     timingArray = returnTextTiming(fileName)
-
     for text in range(timingArray.__len__()):
-
         txt_clip = (TextClip(textArray[text], fontsize=fontSize, font=fontStyle,
                              color=fontColor).set_duration(timingArray[text])
                     .margin(right=textMovementsRight[text], left=textMovementsLeft[text], opacity=0))
@@ -171,11 +164,9 @@ def setTextRL(fileName):
             txt_clip = fadein(txt_clip, 2, [255, 255, 0])
             clip_list.append(txt_clip)
         elif checkEffect() == False:
-            print("abcdd")
             txt_clip = fadeout(txt_clip, 2, [255, 255, 0])
             clip_list.append(txt_clip)
         else:
-            print("None printed")
             clip_list.append(txt_clip)
 
     final_clip = concatenate_videoclips(clip_list)
@@ -233,7 +224,6 @@ def assembleInputBasedVideo():
             logoVideo = returnLogo(LOGO)
             result = CompositeVideoClip([resizedVideo, maskedVideo, setText(templateName).set_start(
                 returnSetStart(templateName)).set_position(("center", calculate_height(FONTSIZE))), previewedVideo, logoVideo])
-
         else:
             resizedVideo = resizeUserVideo(videoInput)
             maskedVideo = returnMaskedClip(templateName)
